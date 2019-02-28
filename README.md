@@ -1,4 +1,4 @@
-# Application Meta Builder
+# Application Meta Builder (Library)
 Build applications by copying, parsing and bundling files from a meta-source directory as described by a configuration data file.
 
 ## Meta Programming
@@ -10,3 +10,6 @@ Meta programming add the benefits of:
 - and allows quick switching of the generated source code between different environments.
 
 A watch mode forms a critical part of the builder. This allows the programmer to work in the meta source directory instead of the regular source directory and having changes pull through seamlessly into the entire application.
+
+## Usage
+
