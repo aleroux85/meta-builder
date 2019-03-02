@@ -58,7 +58,7 @@ type Config interface {
 type RefVal interface {
 	Build(Config)
 	SetChange(...uint) uint
-	Hash() string
+	GetHash() string
 }
 
 type RefLink struct {
