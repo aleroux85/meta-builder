@@ -73,7 +73,7 @@ func finish(refs map[string]*RefLink) {
 				continue
 			}
 			if file.SetChange() != DataFlagged && file.SetChange() != DataStable {
-				fmt.Println("setting", src, ":", dst, ref.Change, "-> stable")
+				fmt.Println("setting", src, ":", dst, file.SetChange(), "-> stable")
 			}
 			file.SetChange(DataStable)
 		}
