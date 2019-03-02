@@ -48,7 +48,7 @@ func (m *RefMap) Start() {
 	}()
 }
 
-type config interface {
+type Config interface {
 	Error(...error) error
 	Destination() string
 	Source() string
@@ -56,7 +56,7 @@ type config interface {
 }
 
 type RefVal interface {
-	Build(config)
+	Build(Config)
 	SetChange(...uint) uint
 	Hash() string
 }
