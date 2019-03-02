@@ -50,8 +50,8 @@ func (m *RefMap) Start() {
 
 type Config interface {
 	Error(...error) error
-	Destination() string
-	Source() string
+	Destination(...string) string
+	Source(...string) string
 	Force() bool
 }
 

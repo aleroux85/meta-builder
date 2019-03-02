@@ -1,60 +1,11 @@
 package builder
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-)
-
-import (
-	"github.com/aleroux85/meta-builder/refmap"
 	"github.com/aleroux85/utils"
 )
 
-type Project_Default struct {
-	Name        string                  `json:"name"`
-	Description string                  `json:"description"`
-	Files       map[string]*FSDirectory `json:"files"`
-	Blackboard  string                  `json:"-"`
-	Mode        string                  `json:"-"`
-	Secrets     []string                `json:"-"`
-	changeDetector
-	Error *error `json:"-"`
-}
-
-func (p *Project_Default) Load(fn string, m *refmap.RefMap) error {
-	if *p.Error != nil {
-		return *p.Error
-	}
-
-	read, err := ioutil.ReadFile(fn)
-	if err != nil {
-		*p.Error = err
-		fmt.Println("error", p.Error)
-		return err
-	}
-
-	err = json.Unmarshal(read, p)
-	if err != nil {
-		*p.Error = err
-		return err
-	}
-
-	return nil
-}
-
-// func (p *Project) Process(fn string, m *RefMap) error {
-// 	if *p.Error != nil {
-// 		return *p.Error
-// 	}
-// }
-
 type BackRef interface {
 	FileStructure() map[string]*FSDirectory
-}
-
-func (p Project_Default) FileStructure() map[string]*FSDirectory {
-	return p.Files
 }
 
 type DataBranch interface {
@@ -102,14 +53,6 @@ type FSDirectory struct {
 	DestinationPath string                  `json:"-"`
 	changeDetector
 }
-
-// const (
-// 	DataStable uint = iota
-// 	DataFlagged
-// 	DataUpdated
-// 	DataAdded
-// 	DataRemove
-// )
 
 type changeDetector struct {
 	Hash   string `json:"-"`
