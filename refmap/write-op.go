@@ -31,7 +31,7 @@ func (o WriteOp) handle(location string, refs map[string]*RefLink) {
 		if refs[source].Files[o.dst].SetChange() == DataAdded {
 			return
 		}
-		if refs[source].Files[o.dst].Hash() == o.val.Hash() {
+		if refs[source].Files[o.dst].GetHash() == o.val.GetHash() {
 			o.val.SetChange(DataFlagged)
 		} else {
 			o.val.SetChange(DataUpdated)

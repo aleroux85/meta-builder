@@ -31,8 +31,8 @@ func TestWrite(t *testing.T) {
 	if link.Files["b"] == nil {
 		t.Error("expected not \"nil\"")
 	}
-	if link.Files["b"].Hash() != "i" {
-		t.Error("expected \"i\", got", link.Files["b"].Hash())
+	if link.Files["b"].GetHash() != "i" {
+		t.Error("expected \"i\", got", link.Files["b"].GetHash())
 	}
 	if link.Files["b"].SetChange() != DataAdded {
 		t.Error("expected DataAdded, got", link.Files["b"].SetChange())
@@ -49,8 +49,8 @@ func TestWrite(t *testing.T) {
 	if link.Files["c"] == nil {
 		t.Error("expected not \"nil\"")
 	}
-	if link.Files["c"].Hash() != "j" {
-		t.Error("expected \"j\", got", link.Files["c"].Hash())
+	if link.Files["c"].GetHash() != "j" {
+		t.Error("expected \"j\", got", link.Files["c"].GetHash())
 	}
 	if link.Files["c"].SetChange() != DataAdded {
 		t.Error("expected DataAdded, got", link.Files["c"].SetChange())
@@ -67,8 +67,8 @@ func TestWrite(t *testing.T) {
 	if link.Files["c"] == nil {
 		t.Error("expected not \"nil\"")
 	}
-	if link.Files["c"].Hash() != "j" {
-		t.Error("expected \"j\", got", link.Files["c"].Hash())
+	if link.Files["c"].GetHash() != "j" {
+		t.Error("expected \"j\", got", link.Files["c"].GetHash())
 	}
 	if link.Files["c"].SetChange() != DataAdded {
 		t.Error("expected DataAdded, got", link.Files["c"].SetChange())
@@ -86,8 +86,8 @@ func TestWrite(t *testing.T) {
 	if link.Files["c"] == nil {
 		t.Error("expected not \"nil\"")
 	}
-	if link.Files["c"].Hash() != "j" {
-		t.Error("expected \"j\", got", link.Files["c"].Hash())
+	if link.Files["c"].GetHash() != "j" {
+		t.Error("expected \"j\", got", link.Files["c"].GetHash())
 	}
 	if link.Files["c"].SetChange() != DataFlagged {
 		t.Error("expected DataFlagged, got", link.Files["c"].SetChange())
@@ -105,8 +105,8 @@ func TestWrite(t *testing.T) {
 	if link.Files["c"] == nil {
 		t.Error("expected not \"nil\"")
 	}
-	if link.Files["c"].Hash() != "k" {
-		t.Error("expected \"k\", got", link.Files["c"].Hash())
+	if link.Files["c"].GetHash() != "k" {
+		t.Error("expected \"k\", got", link.Files["c"].GetHash())
 	}
 	if link.Files["c"].SetChange() != DataUpdated {
 		t.Error("expected DataUpdated, got", link.Files["c"].SetChange())
@@ -223,7 +223,7 @@ type DummyRefVal struct {
 	hash   string
 }
 
-func (r *DummyRefVal) Build(c config) {
+func (r *DummyRefVal) Build(c Config) {
 	r.built = true
 }
 
@@ -234,6 +234,6 @@ func (r *DummyRefVal) SetChange(v ...uint) uint {
 	return r.change
 }
 
-func (r *DummyRefVal) Hash() string {
+func (r *DummyRefVal) GetHash() string {
 	return r.hash
 }
