@@ -1,10 +1,13 @@
 package builder
 
 import (
+	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/aleroux85/meta-builder/refmap"
 	"github.com/aleroux85/utils"
+	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
 )
 
@@ -139,4 +142,59 @@ func (c *Config) Build(force bool) {
 	if c.err != nil {
 		c.err = errors.Wrap(c.err, "building")
 	}
+}
+
+func (c *Config) WatchFiles(throttling time.Duration) {
+	var tmplChange, cnfgChange bool
+
+	for c.err == nil {
+		select {
+		case event, ok := <-c.ConfigMon.Watcher.Events:
+			if !ok {
+				goto stop
+			}
+			fmt.Println("fs event", event.Op, event.Name)
+			if event.Op&fsnotify.Write == fsnotify.Write ||
+				event.Op&fsnotify.Chmod == fsnotify.Chmod {
+				cnfgChange = true
+			}
+		case event, ok := <-c.TemplateMon.Watcher.Events:
+			if !ok {
+				goto stop
+			}
+			fmt.Println("fs event", event.Op, event.Name)
+			if event.Op&fsnotify.Write == fsnotify.Write ||
+				event.Op&fsnotify.Chmod == fsnotify.Chmod {
+				c.RefMap.Set(event.Name, "update")
+				tmplChange = true
+			}
+		case err := <-c.ConfigMon.Watcher.Errors:
+			c.err = err
+		case err := <-c.TemplateMon.Watcher.Errors:
+			c.err = err
+		case <-time.After(throttling):
+			if tmplChange || cnfgChange {
+				if cnfgChange {
+					c.Load()
+					c.Sync()
+				}
+
+				for ref := range c.RefMap.ChangedRefs() {
+					for name, val := range ref.Files {
+						fmt.Println("rebuilding", name)
+						val.Build(c)
+					}
+				}
+
+				c.RefMap.Finish()
+				cnfgChange = false
+				tmplChange = false
+			}
+		}
+	}
+
+stop:
+
+	c.ConfigMon.Stopped <- true
+	c.TemplateMon.Stopped <- true
 }
