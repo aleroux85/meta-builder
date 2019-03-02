@@ -18,10 +18,10 @@ type Config struct {
 	source      string
 	destination string
 	configFile  string
-	links       *refmap.RefMap
+	RefMap      *refmap.RefMap
 	force       bool
-	tmplMon     *utils.Monitor
-	cnfgMon     *utils.Monitor
+	TemplateMon *utils.Monitor
+	ConfigMon   *utils.Monitor
 	err         error
 }
 
@@ -36,15 +36,15 @@ func NewConfig(s ...string) *Config {
 		c.destination = s[1]
 	}
 
-	c.links = refmap.NewRefMap()
-	c.links.Start()
-	c.links.Set("location", c.source)
+	c.RefMap = refmap.NewRefMap()
+	c.RefMap.Start()
+	c.RefMap.Set("location", c.source)
 
-	c.tmplMon = new(utils.Monitor)
-	c.tmplMon.Error = &c.err
+	c.TemplateMon = new(utils.Monitor)
+	c.TemplateMon.Error = &c.err
 
-	c.cnfgMon = new(utils.Monitor)
-	c.cnfgMon.Error = &c.err
+	c.ConfigMon = new(utils.Monitor)
+	c.ConfigMon.Error = &c.err
 	return c
 }
 
@@ -97,14 +97,14 @@ func (c *Config) Load(cnf ...string) {
 		c.configFile = cnf[0]
 	}
 
-	err := c.Project.Load(c.configFile, c.links)
+	err := c.Project.Load(c.configFile, c.RefMap)
 	if err != nil {
 		c.err = errors.Wrap(err, "loading configuration file")
 		return
 	}
 
 	c.Project.LoadSecrets(filepath.Join(c.destination, "passwords.json"))
-	c.links.Assess()
+	c.RefMap.Assess()
 	// c.Project.Blackboard = c.source
 }
 
@@ -114,10 +114,10 @@ func (c *Config) Sync() {
 	}
 
 	sync := &refmap.SyncOp{
-		Mon: c.tmplMon,
+		Mon: c.TemplateMon,
 		Err: make(chan error),
 	}
-	c.links.Sync <- sync
+	c.RefMap.Sync <- sync
 	c.err = <-sync.Err
 }
 
@@ -129,7 +129,7 @@ func (c *Config) Build(force bool) {
 	c.force = force
 
 	changed := &refmap.ChangedOp{make(chan *refmap.RefLink)}
-	c.links.Changed <- changed
+	c.RefMap.Changed <- changed
 	for ref := range changed.Refs {
 		for _, val := range ref.Files {
 			val.Build(c)
