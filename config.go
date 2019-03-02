@@ -20,7 +20,7 @@ type Config struct {
 	Project     Project
 	source      string
 	destination string
-	configFile  string
+	ConfigFile  string
 	RefMap      *refmap.RefMap
 	force       bool
 	TemplateMon *utils.Monitor
@@ -83,7 +83,7 @@ func (c *Config) Error(err ...error) error {
 	return c.err
 }
 
-func (c *Config) NewProject(err *error) Project {
+func (Config) NewProject(err *error) Project {
 	p := new(ProjectDefault)
 	p.Error = err
 	return p
@@ -94,13 +94,15 @@ func (c *Config) Load(cnf ...string) {
 		return
 	}
 
-	c.Project = c.NewProject(&c.err)
-
-	if len(cnf) > 0 {
-		c.configFile = cnf[0]
+	if c.Project == nil {
+		c.Project = c.NewProject(&c.err)
 	}
 
-	err := c.Project.Load(c.configFile, c.RefMap)
+	if len(cnf) > 0 {
+		c.ConfigFile = cnf[0]
+	}
+
+	err := c.Project.Load(c.ConfigFile, c.RefMap)
 	if err != nil {
 		c.err = errors.Wrap(err, "loading configuration file")
 		return
