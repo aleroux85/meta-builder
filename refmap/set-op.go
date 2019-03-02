@@ -60,18 +60,20 @@ func finish(refs map[string]*RefLink) {
 			delete(refs, src)
 			continue
 		}
-		if ref.Change != DataFlagged {
-			fmt.Println("setting", src, ref.Change, "stable")
+
+		if ref.Change != DataFlagged && ref.Change != DataStable {
+			fmt.Println("setting", src, ref.Change, "-> stable")
 		}
 		ref.Change = DataStable
+
 		for dst, file := range ref.Files {
 			if file.SetChange() == DataRemove {
 				fmt.Println("removing", src, ":", dst, "from refmap")
 				delete(ref.Files, dst)
 				continue
 			}
-			if ref.Change != DataFlagged {
-				fmt.Println("setting", src, ":", dst, "stable")
+			if file.SetChange() != DataFlagged && file.SetChange() != DataStable {
+				fmt.Println("setting", src, ":", dst, ref.Change, "-> stable")
 			}
 			file.SetChange(DataStable)
 		}
