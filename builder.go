@@ -6,6 +6,8 @@ import (
 
 type BackRef interface {
 	FileStructure() map[string]*FSDirectory
+	CmdMatch() map[string]*Exec
+	Up() BackRef
 }
 
 type DataBranch interface {
@@ -15,12 +17,46 @@ type DataBranch interface {
 	Project() *Project
 }
 
-// type Entity struct {
-// 	Name  string                  `json:"name"`
-// 	Files map[string]*FSDirectory `json:"files"`
-// 	changeDetector
-// 	Error *error `json:"-"`
-// }
+type Project struct {
+	Description string   `json:"description"`
+	Mode        string   `json:"-"`
+	Secrets     []string `json:"-"`
+	Entity
+	Error *error `json:"-"`
+}
+
+type Entity struct {
+	Name   string                  `json:"name"`
+	Files  map[string]*FSDirectory `json:"files"`
+	Execs  map[string]*Exec        `json:"execs"`
+	Branch DataBranch              `json:"-"`
+	Parent BackRef                 `json:"-"`
+	changeDetector
+}
+
+func (m Entity) FileStructure() map[string]*FSDirectory {
+	return m.Files
+}
+
+func (m Entity) CmdMatch() map[string]*Exec {
+	return m.Execs
+}
+
+func (m Entity) Up() BackRef {
+	return m.Parent
+}
+
+type FSDirectory struct {
+	Source          string                  `json:"from"`
+	Destination     string                  `json:"dest"`
+	Directories     map[string]*FSDirectory `json:"directories"`
+	Copy            bool                    `json:"copyfiles"`
+	Update          string                  `json:"update"`
+	Template        *utils.Templax          `json:"-"`
+	SourcePath      string                  `json:"-"`
+	DestinationPath string                  `json:"-"`
+	Entity
+}
 
 type FSFile struct {
 	Name      string            `json:"name"`
@@ -38,20 +74,9 @@ type FSTemplate struct {
 	Body string `json:"body"`
 }
 
-type FSDirectory struct {
-	Name            string                  `json:"name"`
-	Source          string                  `json:"from"`
-	Destination     string                  `json:"dest"`
-	Directories     map[string]*FSDirectory `json:"directories"`
-	Files           map[string]*FSFile      `json:"files"`
-	Copy            bool                    `json:"copyfiles"`
-	Update          string                  `json:"update"`
-	Parent          BackRef                 `json:"-"`
-	Template        *utils.Templax          `json:"-"`
-	Branch          DataBranch              `json:"-"`
-	SourcePath      string                  `json:"-"`
-	DestinationPath string                  `json:"-"`
-	changeDetector
+type Exec struct {
+	File string   `json:"file"`
+	Exec []string `json:"exec"`
 }
 
 type changeDetector struct {
