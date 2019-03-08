@@ -1,5 +1,7 @@
 package refmap
 
+import "os/exec"
+
 const (
 	DataStable uint = iota
 	DataFlagged
@@ -14,6 +16,7 @@ type RefMap struct {
 	Sets    chan *SetOp
 	Sync    chan *SyncOp
 	Changed chan *ChangedOp
+	Exec    chan *ExecOp
 }
 
 func NewRefMap() *RefMap {
@@ -23,12 +26,14 @@ func NewRefMap() *RefMap {
 	m.Sets = make(chan *SetOp)
 	m.Sync = make(chan *SyncOp)
 	m.Changed = make(chan *ChangedOp)
+	m.Exec = make(chan *ExecOp)
 	return m
 }
 
 func (m *RefMap) Start() {
 	go func() {
 		refs := make(map[string]*RefLink)
+		execs := make(map[string]*exec.Cmd)
 		startLocation := ""
 
 		for {
@@ -38,11 +43,13 @@ func (m *RefMap) Start() {
 			case write := <-m.Writes:
 				write.handle(startLocation, refs)
 			case setter := <-m.Sets:
-				setter.handle(&startLocation, refs)
+				setter.handle(&startLocation, refs, execs)
 			case sync := <-m.Sync:
 				sync.handle(refs)
 			case changed := <-m.Changed:
 				changed.handle(refs)
+			case exec := <-m.Exec:
+				exec.handle(execs)
 			}
 		}
 	}()
@@ -53,6 +60,7 @@ type Config interface {
 	Destination(...string) string
 	Source(...string) string
 	Force() bool
+	RegisterCmd(string, *exec.Cmd)
 }
 
 type RefVal interface {

@@ -1,6 +1,9 @@
 package refmap
 
-import "fmt"
+import (
+	"fmt"
+	"os/exec"
+)
 
 type SetOp struct {
 	Key string
@@ -8,7 +11,7 @@ type SetOp struct {
 	Err chan error
 }
 
-func (o SetOp) handle(location *string, refs map[string]*RefLink) {
+func (o SetOp) handle(location *string, refs map[string]*RefLink, execs map[string]*exec.Cmd) {
 	if o.Key == "location" {
 		*location = o.Val
 		o.Err <- nil
@@ -20,7 +23,7 @@ func (o SetOp) handle(location *string, refs map[string]*RefLink) {
 		return
 	}
 	if o.Key == "finish" {
-		finish(refs)
+		finish(refs, execs)
 		o.Err <- nil
 		return
 	}
@@ -53,7 +56,7 @@ func assess(refs map[string]*RefLink) {
 	}
 }
 
-func finish(refs map[string]*RefLink) {
+func finish(refs map[string]*RefLink, execs map[string]*exec.Cmd) {
 	for src, ref := range refs {
 		if ref.Change == DataRemove {
 			fmt.Println("removing", src, "from refmap")
@@ -77,6 +80,11 @@ func finish(refs map[string]*RefLink) {
 			}
 			file.SetChange(DataStable)
 		}
+	}
+
+	for key := range execs {
+		fmt.Println("wipeing commands", key)
+		delete(execs, key)
 	}
 }
 
