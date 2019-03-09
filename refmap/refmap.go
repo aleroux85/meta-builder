@@ -3,7 +3,7 @@ package refmap
 import "os/exec"
 
 const (
-	DataStable uint = iota
+	DataStable uint8 = iota
 	DataFlagged
 	DataUpdated
 	DataAdded
@@ -30,10 +30,15 @@ func NewRefMap() *RefMap {
 	return m
 }
 
+type command struct {
+	Cmd     []string
+	TimeOut int
+}
+
 func (m *RefMap) Start() {
 	go func() {
 		refs := make(map[string]*RefLink)
-		execs := make(map[string]*exec.Cmd)
+		execs := make(map[string]command)
 		startLocation := ""
 
 		for {
@@ -43,7 +48,7 @@ func (m *RefMap) Start() {
 			case write := <-m.Writes:
 				write.handle(startLocation, refs)
 			case setter := <-m.Sets:
-				setter.handle(&startLocation, refs, execs)
+				setter.handle(&startLocation, refs)
 			case sync := <-m.Sync:
 				sync.handle(refs)
 			case changed := <-m.Changed:
@@ -65,13 +70,13 @@ type Config interface {
 
 type RefVal interface {
 	Build(Config)
-	SetChange(...uint) uint
+	SetChange(...uint8) uint8
 	GetHash() string
 }
 
 type RefLink struct {
 	Files  map[string]RefVal
-	Change uint
+	Change uint8
 }
 
 func NewRefLink() *RefLink {

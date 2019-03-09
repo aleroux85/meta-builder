@@ -1,30 +1,105 @@
 package refmap
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"os/exec"
+	"time"
 )
 
 type ExecOp struct {
-	Key string
-	Cmd *exec.Cmd
-	Err chan error
+	Key     string
+	Act     string
+	Cmd     []string
+	TimeOut int
+	Rsp     chan ExecRsp
 }
 
-func (o ExecOp) handle(execs map[string]*exec.Cmd) {
+type ExecRsp struct {
+	More           bool
+	Key            string
+	StdOut, StdErr string
+	Err            error
+}
+
+func (o ExecOp) handle(execs map[string]command) {
+	if o.Act != "register" && o.Act != "execute" {
+		o.Rsp <- ExecRsp{}
+	}
+
+	if o.Act == "execute" {
+		var key string
+		var exc command
+
+		for key, exc = range execs {
+			break
+		}
+
+		if key == "" {
+			o.Rsp <- ExecRsp{}
+		}
+
+		delete(execs, key)
+		fmt.Println("executing command", key, o.Cmd)
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(exc.TimeOut)*time.Millisecond)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctx, exc.Cmd[0], exc.Cmd[1:]...)
+
+		var stdOut, stdErr bytes.Buffer
+		cmd.Stdout = &stdOut
+		cmd.Stderr = &stdErr
+
+		err := cmd.Run()
+		o.Rsp <- ExecRsp{
+			More:   len(execs) > 0,
+			Key:    key,
+			StdOut: stdOut.String(),
+			StdErr: stdErr.String(),
+			Err:    err,
+		}
+		return
+	}
+
 	if _, found := execs[o.Key]; !found {
-		execs[o.Key] = o.Cmd
-		fmt.Println("registring command", o.Key, o.Cmd)
-		o.Err <- nil
+		timeOut := 1000
+		if o.TimeOut > 0 {
+			timeOut = o.TimeOut
+		}
+
+		execs[o.Key] = command{
+			Cmd:     o.Cmd,
+			TimeOut: timeOut,
+		}
+		fmt.Println("registered command", o.Key, o.Cmd)
 	}
+	o.Rsp <- ExecRsp{}
 }
 
-func (r RefMap) Register(key string, cmd *exec.Cmd) {
-	pusher := &ExecOp{
-		Key: key,
-		Cmd: cmd,
-		Err: make(chan error),
+func (r RefMap) Register(key string, cmd []string, timeOutOpt ...int) {
+	timeOut := 0
+	if len(timeOutOpt) > 0 {
+		timeOut = timeOutOpt[0]
 	}
-	r.Exec <- pusher
-	<-pusher.Err
+
+	register := &ExecOp{
+		Key:     key,
+		Act:     "register",
+		Cmd:     cmd,
+		TimeOut: timeOut,
+		Rsp:     make(chan ExecRsp),
+	}
+	r.Exec <- register
+	<-register.Rsp
+}
+
+func (r RefMap) Execute() ExecRsp {
+	execute := &ExecOp{
+		Act: "execute",
+		Rsp: make(chan ExecRsp),
+	}
+	r.Exec <- execute
+	return <-execute.Rsp
 }

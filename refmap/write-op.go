@@ -29,7 +29,9 @@ func (o WriteOp) handle(location string, refs map[string]*RefLink) {
 		fmt.Printf("adding %s\t-> %s\n", source, o.dst)
 	} else {
 		if refs[source].Files[o.dst].SetChange() == DataAdded {
-			return
+			o.val.SetChange(DataAdded)
+			//TODO add warning
+			goto replace
 		}
 		if refs[source].Files[o.dst].GetHash() == o.val.GetHash() {
 			o.val.SetChange(DataFlagged)
@@ -37,8 +39,10 @@ func (o WriteOp) handle(location string, refs map[string]*RefLink) {
 			o.val.SetChange(DataUpdated)
 			fmt.Printf("updating %s\t-> %s\n", source, o.dst)
 		}
+	replace:
 		refs[source].Files[o.dst] = o.val
 	}
+
 }
 
 func (r RefMap) Write(src, dst string, val RefVal) {
