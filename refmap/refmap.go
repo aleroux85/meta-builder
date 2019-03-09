@@ -1,7 +1,5 @@
 package refmap
 
-import "os/exec"
-
 const (
 	DataStable uint8 = iota
 	DataFlagged
@@ -65,7 +63,7 @@ type Config interface {
 	Destination(...string) string
 	Source(...string) string
 	Force() bool
-	RegisterCmd(string, *exec.Cmd)
+	RegisterCmd(string, []string, ...int)
 }
 
 type RefVal interface {
