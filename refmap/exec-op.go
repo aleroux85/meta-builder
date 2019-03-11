@@ -26,22 +26,25 @@ type ExecRsp struct {
 func (o ExecOp) handle(execs map[string]command) {
 	if o.Act != "register" && o.Act != "execute" {
 		o.Rsp <- ExecRsp{}
+		return
 	}
 
 	if o.Act == "execute" {
 		var key string
 		var exc command
 
+		if len(execs) == 0 {
+			o.Rsp <- ExecRsp{
+				More: len(execs) > 0,
+			}
+			return
+		}
+
 		for key, exc = range execs {
 			break
 		}
 
-		if key == "" {
-			o.Rsp <- ExecRsp{}
-		}
-
-		delete(execs, key)
-		fmt.Println("executing command", key, o.Cmd)
+		fmt.Println("executing command", key, exc.Cmd)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(exc.TimeOut)*time.Millisecond)
 		defer cancel()
@@ -51,15 +54,17 @@ func (o ExecOp) handle(execs map[string]command) {
 		var stdOut, stdErr bytes.Buffer
 		cmd.Stdout = &stdOut
 		cmd.Stderr = &stdErr
-
 		err := cmd.Run()
+
 		o.Rsp <- ExecRsp{
-			More:   len(execs) > 0,
+			More:   len(execs) > 1,
 			Key:    key,
 			StdOut: stdOut.String(),
 			StdErr: stdErr.String(),
 			Err:    err,
 		}
+
+		delete(execs, key)
 		return
 	}
 
