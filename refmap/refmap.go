@@ -62,7 +62,7 @@ type Config interface {
 	Error(...error) error
 	Destination(...string) string
 	Source(...string) string
-	Force() bool
+	Force(...bool) bool
 	RegisterCmd(string, []string, ...int)
 }
 
