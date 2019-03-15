@@ -33,7 +33,7 @@ func (o WriteOp) handle(location string, refs map[string]*RefLink) {
 			//TODO add warning
 			goto replace
 		}
-		if refs[source].Files[o.dst].GetHash() == o.val.GetHash() {
+		if refs[source].Files[o.dst].Hash() == o.val.Hash() {
 			o.val.SetChange(DataFlagged)
 		} else {
 			o.val.SetChange(DataUpdated)

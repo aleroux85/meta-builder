@@ -41,8 +41,8 @@ func TestWriting(t *testing.T) {
 			t.Errorf(`expected "%+v", got "<nil>"`, link.Files["b"])
 			t.FailNow()
 		}
-		if link.Files["b"].GetHash() != "test_hash" {
-			t.Errorf(`expected "test_hash", got "%+v"`, link.Files["b"].GetHash())
+		if link.Files["b"].Hash() != "test_hash" {
+			t.Errorf(`expected "test_hash", got "%+v"`, link.Files["b"].Hash())
 		}
 		if link.Files["b"].SetChange() != DataAdded {
 			t.Errorf(`expected "%s", got "%s"`, status[DataAdded], status[link.Files["b"].SetChange()])
@@ -51,8 +51,8 @@ func TestWriting(t *testing.T) {
 			t.Errorf(`expected "%+v", got "<nil>"`, link.Files["c"])
 			t.FailNow()
 		}
-		if link.Files["c"].GetHash() != "another_test_hash" {
-			t.Errorf(`expected "another_test_hash", got "%+v"`, link.Files["c"].GetHash())
+		if link.Files["c"].Hash() != "another_test_hash" {
+			t.Errorf(`expected "another_test_hash", got "%+v"`, link.Files["c"].Hash())
 		}
 		if link.Files["c"].SetChange() != DataAdded {
 			t.Errorf(`expected "%s", got "%s"`, status[DataAdded], status[link.Files["b"].SetChange()])
@@ -73,8 +73,8 @@ func TestWriting(t *testing.T) {
 			t.Errorf(`expected "%+v", got "<nil>"`, link.Files["c"])
 			t.FailNow()
 		}
-		if link.Files["c"].GetHash() != "changed_test_hash" {
-			t.Errorf(`expected "changed_test_hash", got "%+v"`, link.Files["c"].GetHash())
+		if link.Files["c"].Hash() != "changed_test_hash" {
+			t.Errorf(`expected "changed_test_hash", got "%+v"`, link.Files["c"].Hash())
 		}
 		if link.Files["c"].SetChange() != DataAdded {
 			t.Errorf(`expected "%s", got "%s"`, status[DataAdded], status[link.Files["c"].SetChange()])
@@ -96,8 +96,8 @@ func TestWriting(t *testing.T) {
 			t.Errorf(`expected "%+v", got "<nil>"`, link.Files["c"])
 			t.FailNow()
 		}
-		if link.Files["c"].GetHash() != "changed_test_hash" {
-			t.Errorf(`expected "changed_test_hash", got "%+v"`, link.Files["c"].GetHash())
+		if link.Files["c"].Hash() != "changed_test_hash" {
+			t.Errorf(`expected "changed_test_hash", got "%+v"`, link.Files["c"].Hash())
 		}
 		if link.Files["c"].SetChange() != DataFlagged {
 			t.Errorf(`expected "%s", got "%s"`, status[DataFlagged], status[link.Files["c"].SetChange()])
@@ -119,8 +119,8 @@ func TestWriting(t *testing.T) {
 			t.Errorf(`expected "%+v", got "<nil>"`, link.Files["c"])
 			t.FailNow()
 		}
-		if link.Files["c"].GetHash() != "another_changed_test_hash" {
-			t.Errorf(`expected "another_changed_test_hash", got "%+v"`, link.Files["c"].GetHash())
+		if link.Files["c"].Hash() != "another_changed_test_hash" {
+			t.Errorf(`expected "another_changed_test_hash", got "%+v"`, link.Files["c"].Hash())
 		}
 		if link.Files["c"].SetChange() != DataUpdated {
 			t.Errorf(`expected "%s", got "%s"`, status[DataUpdated], status[link.Files["c"].SetChange()])
@@ -328,6 +328,6 @@ func (r *StubRefVal) SetChange(v ...uint8) uint8 {
 	return r.change
 }
 
-func (r *StubRefVal) GetHash() string {
+func (r *StubRefVal) Hash() string {
 	return r.hash
 }

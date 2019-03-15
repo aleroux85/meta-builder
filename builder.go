@@ -52,7 +52,7 @@ type Exec struct {
 
 type changeDetector struct {
 	hash   string `json:"-"`
-	Change uint   `json:"-"`
+	change uint8  `json:"-"`
 }
 
 func hash(d interface{}) (string, error) {

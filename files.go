@@ -32,7 +32,7 @@ func (fs *FSDirectory) SetBranch(branch ...DataBranch) DataBranch {
 	return fs.Branch
 }
 
-func (dir *FSDirectory) Hash() error {
+func (dir *FSDirectory) CalculateHash() error {
 	var err error
 
 	dirTemp := *dir
@@ -61,7 +61,7 @@ type FSFile struct {
 	changeDetector
 }
 
-func (file *FSFile) Hash() error {
+func (file *FSFile) CalculateHash() error {
 	var err error
 
 	fileTemp := *file
@@ -70,6 +70,17 @@ func (file *FSFile) Hash() error {
 		return err
 	}
 	return nil
+}
+
+func (file *FSFile) Hash() string {
+	return file.changeDetector.hash
+}
+
+func (file *FSFile) SetChange(change ...uint8) uint8 {
+	if len(change) > 0 {
+		file.change = change[0]
+	}
+	return file.change
 }
 
 func (file *FSFile) Build(c refmap.Config) {
