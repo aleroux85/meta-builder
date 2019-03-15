@@ -32,13 +32,13 @@ func (fs *FSDirectory) SetBranch(branch ...DataBranch) DataBranch {
 	return fs.Branch
 }
 
-func (fs *FSDirectory) Hash() error {
+func (dir *FSDirectory) Hash() error {
 	var err error
 
-	fsTemp := *fs
-	fsTemp.Directories = nil
-	fsTemp.Files = nil
-	fs.changeDetector.hash, err = hash(fsTemp)
+	dirTemp := *dir
+	dirTemp.Directories = nil
+	dirTemp.Files = nil
+	dir.changeDetector.hash, err = hash(dirTemp)
 	if err != nil {
 		return err
 	}
@@ -59,6 +59,17 @@ type FSFile struct {
 	Templates map[string]string `json:"templates"`
 	Parent    BackRef           `json:"-"`
 	changeDetector
+}
+
+func (file *FSFile) Hash() error {
+	var err error
+
+	fileTemp := *file
+	file.changeDetector.hash, err = hash(fileTemp)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (file *FSFile) Build(c refmap.Config) {
