@@ -14,14 +14,14 @@ import (
 )
 
 type FSDirectory struct {
-	Source          string                  `json:"from"`
-	Destination     string                  `json:"dest"`
-	Directories     map[string]*FSDirectory `json:"directories"`
-	Copy            bool                    `json:"copyfiles"`
-	Update          string                  `json:"update"`
-	Template        *utils.Templax          `json:"-"`
-	SourcePath      string                  `json:"-"`
-	DestinationPath string                  `json:"-"`
+	Source          string             `json:"from"`
+	Destination     string             `json:"dest"`
+	Files           map[string]*FSFile `json:"files"`
+	Copy            bool               `json:"copyfiles"`
+	Update          string             `json:"update"`
+	Template        *utils.Templax     `json:"-"`
+	SourcePath      string             `json:"-"`
+	DestinationPath string             `json:"-"`
 	Entity
 }
 
