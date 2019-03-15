@@ -25,6 +25,26 @@ type FSDirectory struct {
 	Entity
 }
 
+func (fs *FSDirectory) SetBranch(branch ...DataBranch) DataBranch {
+	if len(branch) > 0 {
+		fs.Branch = branch[0]
+	}
+	return fs.Branch
+}
+
+func (fs *FSDirectory) Hash() error {
+	var err error
+
+	fsTemp := *fs
+	fsTemp.Directories = nil
+	fsTemp.Files = nil
+	fs.changeDetector.hash, err = hash(fsTemp)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type FSTemplate struct {
 	Name string `json:"name"`
 	File string `json:"file"`

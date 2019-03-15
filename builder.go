@@ -1,5 +1,11 @@
 package builder
 
+import (
+	"crypto/sha1"
+	"encoding/json"
+	"fmt"
+)
+
 type BackRef interface {
 	FileStructure() map[string]*FSDirectory
 	CmdMatch() map[string]*Exec
@@ -45,6 +51,19 @@ type Exec struct {
 }
 
 type changeDetector struct {
-	Hash   string `json:"-"`
+	hash   string `json:"-"`
 	Change uint   `json:"-"`
+}
+
+func hash(d interface{}) (string, error) {
+	json, err := json.Marshal(d)
+	if err != nil {
+		return "", err
+	}
+	h := sha1.New()
+	_, err = h.Write(json)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
