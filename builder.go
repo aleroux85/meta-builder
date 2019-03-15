@@ -1,9 +1,5 @@
 package builder
 
-import (
-	"github.com/aleroux85/utils"
-)
-
 type BackRef interface {
 	FileStructure() map[string]*FSDirectory
 	CmdMatch() map[string]*Exec
@@ -15,6 +11,11 @@ type DataBranch interface {
 	SetFile(*FSFile)
 	File() *FSFile
 	Project() *Project
+}
+
+type PrjData struct {
+	Prj *Project
+	FSF *FSFile
 }
 
 type Entity struct {
@@ -36,24 +37,6 @@ func (m Entity) CmdMatch() map[string]*Exec {
 
 func (m Entity) Up() BackRef {
 	return m.Parent
-}
-
-type FSDirectory struct {
-	Source          string                  `json:"from"`
-	Destination     string                  `json:"dest"`
-	Directories     map[string]*FSDirectory `json:"directories"`
-	Copy            bool                    `json:"copyfiles"`
-	Update          string                  `json:"update"`
-	Template        *utils.Templax          `json:"-"`
-	SourcePath      string                  `json:"-"`
-	DestinationPath string                  `json:"-"`
-	Entity
-}
-
-type FSTemplate struct {
-	Name string `json:"name"`
-	File string `json:"file"`
-	Body string `json:"body"`
 }
 
 type Exec struct {

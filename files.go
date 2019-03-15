@@ -13,6 +13,24 @@ import (
 	"github.com/pkg/errors"
 )
 
+type FSDirectory struct {
+	Source          string                  `json:"from"`
+	Destination     string                  `json:"dest"`
+	Directories     map[string]*FSDirectory `json:"directories"`
+	Copy            bool                    `json:"copyfiles"`
+	Update          string                  `json:"update"`
+	Template        *utils.Templax          `json:"-"`
+	SourcePath      string                  `json:"-"`
+	DestinationPath string                  `json:"-"`
+	Entity
+}
+
+type FSTemplate struct {
+	Name string `json:"name"`
+	File string `json:"file"`
+	Body string `json:"body"`
+}
+
 type FSFile struct {
 	Name      string            `json:"name"`
 	Copy      bool              `json:"copy"`
