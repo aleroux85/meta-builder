@@ -16,7 +16,6 @@ type DataBranch interface {
 	Files() map[string]*FSDirectory
 	SetFile(*FSFile)
 	File() *FSFile
-	Project() *Project
 }
 
 type PrjData struct {
