@@ -12,7 +12,7 @@ type Project struct {
 	Description string   `json:"description"`
 	Mode        string   `json:"-"`
 	Secrets     []string `json:"-"`
-	Entity
+	*Entity
 	Error *error `json:"-"`
 }
 

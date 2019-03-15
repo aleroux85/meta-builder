@@ -22,7 +22,7 @@ type FSDirectory struct {
 	Template        *utils.Templax     `json:"-"`
 	SourcePath      string             `json:"-"`
 	DestinationPath string             `json:"-"`
-	Entity
+	*Entity
 }
 
 func (fs *FSDirectory) SetBranch(branch ...DataBranch) DataBranch {
@@ -38,7 +38,7 @@ func (dir *FSDirectory) CalculateHash() error {
 	dirTemp := *dir
 	dirTemp.Directories = nil
 	dirTemp.Files = nil
-	dir.changeDetector.hash, err = hash(dirTemp)
+	err = dir.changeDetector.CalculateHash(dirTemp)
 	if err != nil {
 		return err
 	}
@@ -58,14 +58,14 @@ type FSFile struct {
 	Source    string            `json:"source"`
 	Templates map[string]string `json:"templates"`
 	Parent    BackRef           `json:"-"`
-	changeDetector
+	*changeDetector
 }
 
 func (file *FSFile) CalculateHash() error {
 	var err error
 
 	fileTemp := *file
-	file.changeDetector.hash, err = hash(fileTemp)
+	err = file.changeDetector.CalculateHash(fileTemp)
 	if err != nil {
 		return err
 	}

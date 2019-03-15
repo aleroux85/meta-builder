@@ -30,7 +30,7 @@ type Entity struct {
 	Execs       map[string]*Exec        `json:"execs"`
 	Branch      DataBranch              `json:"-"`
 	Parent      BackRef                 `json:"-"`
-	changeDetector
+	*changeDetector
 }
 
 func (m Entity) FileStructure() map[string]*FSDirectory {
@@ -55,15 +55,18 @@ type changeDetector struct {
 	change uint8  `json:"-"`
 }
 
-func hash(d interface{}) (string, error) {
-	json, err := json.Marshal(d)
+func (cd *changeDetector) CalculateHash(m interface{}) error {
+	json, err := json.Marshal(m)
 	if err != nil {
-		return "", err
+		return err
 	}
+
 	h := sha1.New()
 	_, err = h.Write(json)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return fmt.Sprintf("%x", h.Sum(nil)), nil
+	cd.hash = fmt.Sprintf("%x", h.Sum(nil))
+
+	return nil
 }
