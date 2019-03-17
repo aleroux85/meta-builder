@@ -13,38 +13,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-type FSDirectory struct {
-	Source          string             `json:"from"`
-	Destination     string             `json:"dest"`
-	Files           map[string]*FSFile `json:"files"`
-	Copy            bool               `json:"copyfiles"`
-	Update          string             `json:"update"`
-	Template        *utils.Templax     `json:"-"`
-	SourcePath      string             `json:"-"`
-	DestinationPath string             `json:"-"`
-	*Entity
-}
-
-func (fs *FSDirectory) SetBranch(branch ...DataBranch) DataBranch {
-	if len(branch) > 0 {
-		fs.Branch = branch[0]
-	}
-	return fs.Branch
-}
-
-func (dir *FSDirectory) CalculateHash() error {
-	var err error
-
-	dirTemp := *dir
-	dirTemp.Directories = nil
-	dirTemp.Files = nil
-	err = dir.changeDetector.CalculateHash(dirTemp)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 type FSTemplate struct {
 	Name string `json:"name"`
 	File string `json:"file"`
@@ -58,7 +26,7 @@ type FSFile struct {
 	Source    string            `json:"source"`
 	Templates map[string]string `json:"templates"`
 	Parent    BackRef           `json:"-"`
-	*changeDetector
+	changeDetector
 }
 
 func (file *FSFile) CalculateHash() error {

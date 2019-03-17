@@ -1,0 +1,56 @@
+{
+  "name": "a",
+  "directories": {
+    "aa": {
+      "files": {"aaa.ext": {}},
+      "directories": {
+        "aaa": {
+          "files": {"aaaa.ext": {}},
+          "directories": {
+            "aaaa": {
+              "files": {"aaaaa.ext": {}}
+            }
+          }
+        },
+        "aab": {
+          "dest": "jump",
+          "files": {"aaba.ext": {}}
+        }
+      }
+    },
+    "ab": {
+      "dest": ".",
+      "files": {"aba.ext": {}},
+      "directories": {
+        "aba": {
+          "dest": ".",
+          "files": {"abaa.ext": {}},
+          "directories": {
+            "abaa": {
+              "dest": ".",
+              "files": {"abaaa.ext": {}}
+            }
+          }
+        },
+        "abb": {
+          "dest": "./jump",
+          "files": {"abba.ext": {}},
+          "directories": {
+            "abba": {
+              "dest": "./here",
+              "files": {"abbaa.ext": {}}
+            }
+          }
+        }
+      }
+    },
+    "ac": {
+      "directories": {
+        "aca": {
+          "dest": "/",
+          "files": {"acaa.ext": {}}
+        }
+      }
+    }
+  }
+}

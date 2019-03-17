@@ -5,20 +5,26 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/aleroux85/meta-builder/refmap"
 	"github.com/aleroux85/utils"
+	"github.com/pkg/errors"
 )
 
 type Project struct {
 	Description string   `json:"description"`
 	Mode        string   `json:"-"`
 	Secrets     []string `json:"-"`
-	*Entity
+	Entity
 	Error *error `json:"-"`
 }
 
 func NewProject(err ...*error) *Project {
 	var newError error
-	p := new(Project)
+	p := &Project{
+		Entity: Entity{
+			changeDetector: changeDetector{},
+		},
+	}
 
 	if len(err) == 0 {
 		p.Error = &newError
@@ -26,6 +32,18 @@ func NewProject(err ...*error) *Project {
 		p.Error = err[0]
 	}
 	return p
+}
+
+func (p *Project) CalculateHash() error {
+	var err error
+
+	pTemp := *p
+	pTemp.Directories = nil
+	err = p.Entity.changeDetector.CalculateHash(pTemp)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (p *Project) Load(fn string) {
@@ -40,6 +58,21 @@ func (p *Project) Load(fn string) {
 	}
 
 	err = json.Unmarshal(f, p)
+	if err != nil {
+		*p.Error = err
+		return
+	}
+}
+
+func (p *Project) Process(m *refmap.RefMap) {
+
+	err := p.CalculateHash()
+	if err != nil {
+		*p.Error = err
+		return
+	}
+
+	err = processFS("", p, m)
 	if err != nil {
 		*p.Error = err
 		return
@@ -78,7 +111,7 @@ func (p *Project) LoadSecrets(fn string) {
 
 		b, err := json.Marshal(secrets)
 		if err != nil {
-			*p.Error = err
+			*p.Error = errors.Wrap(err, "marshalling")
 			return
 		}
 
@@ -102,7 +135,7 @@ func (p *Project) LoadSecrets(fn string) {
 
 		err = json.Unmarshal(read, &secrets)
 		if err != nil {
-			*p.Error = err
+			*p.Error = errors.Wrap(err, "unmarshalling")
 			return
 		}
 	}

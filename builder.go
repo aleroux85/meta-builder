@@ -18,18 +18,13 @@ type DataBranch interface {
 	File() *FSFile
 }
 
-type PrjData struct {
-	Prj *Project
-	FSF *FSFile
-}
-
 type Entity struct {
 	Name        string                  `json:"name"`
 	Directories map[string]*FSDirectory `json:"directories"`
 	Execs       map[string]*Exec        `json:"execs"`
 	Branch      DataBranch              `json:"-"`
 	Parent      BackRef                 `json:"-"`
-	*changeDetector
+	changeDetector
 }
 
 func (m Entity) FileStructure() map[string]*FSDirectory {
