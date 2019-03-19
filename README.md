@@ -11,28 +11,11 @@ Meta programming add the benefits of:
 
 A watch mode forms a critical part of the builder. This allows the programmer to work in the meta source directory instead of the regular source directory and having changes pull through seamlessly into the entire application.
 
-## Features
+## Overview
 
 The builder uses the `meta.json` configuration file
 and the template files (in the meta folder) to
 build the project.
-
-The builder can be executed with:
-
-```bash
-bin/meta-builder
-```
-
-to build the project. Files that does not exist yet will be created. If files exist, it will not be replaced.
-The flag `-f` forces the replacement of all files and can be used as such:
-
-```bash
-bin/meta-builder -f
-```
-
-A `-w` flag can be added to put the builder into
-**watch mode** where files will be automatically
-updated when the meta code is changed.
 
 The builder will transfer files from sources to destinations by:
 - stepping through directories recursively
@@ -42,9 +25,34 @@ The builder will transfer files from sources to destinations by:
 - use file key as destination name
 - create destination file
 
-##### File Data Structures
+## Using as stand-alone
 
+The builder can be executed with:
 
+```bash
+bin/meta-builder
+```
+
+Files that does not exist yet will be created. If files already exists, it will not be replaced. However, the flag `-f` forces the replacement of all files.
+
+Your project might look like this:
+```
+project-root
+|- meta
+|  |- file.ext
+|
+|- meta.json
+```
+The `meta` folder contains the files and templates that will be used to build files.
+The `meta.json` file describes how to build the files and where to place them.
+
+Files will by default be built from the `meta` folder into the `project-root` using `meta.json`. The `-s`, `-d` and `-c` flags can be used to change these defaults.
+A `-w` flag can be added to put the builder into
+**watch mode** where files will be automatically
+updated when the meta code is changed.
+Use the `-h` flag for help.
+
+## Implementing your own builder
 
 ## meta.json Configuration Reference
 
@@ -57,34 +65,41 @@ The config file defines the project at the top level. The project structure is:
 }
 ```
 
-File structures (FSs) are specified with the `directories` key.
-The `directories` key contain key-value pairs of multiple FSs
-that can each be understood as a directory in the project.
+File structures (FSs) are specified within an object with key `directories`.
+The `directories` object can contain key-value pairs of multiple FSs
+that can each be viewed as a directory in the project.
 
 ```json
 {
   "directories": {
     ...
-    "dir-one": {},
-    "dir-two": {},
+    "dir-name": {},
+    "dir-name": {},
     ...
   }
 }
 ```
 
-A FS can contain files as key-value pairs under the `files` key.
+The FSs can contain child FSs within an `directories` object, aswell as file objects as key-value pairs under an object with a `files` key.
 These are the files that will be built.
 
 ```json
 {
   "directories": {
     ...
-    "dir-two": {
+    "dir-name": {
       "files": {
         ...
-        "file-aaa.ext": {},
-        "file-bbb.ext": {},
+        "file-name.ext": {},
+        "file-name.ext": {},
         ...
+      },
+      "directories": {
+        "dir-name": {
+          "files": {
+            ...
+          }
+        }
       }
     },
     ...
@@ -92,10 +107,10 @@ These are the files that will be built.
 }
 ```
 
-By default, a file in the meta directory with the path name `file/path/file-name`
+By default, a file in the meta directory
 will be parsed and written to a file (named with the file key)
 and placed under a directory (named with the FS key)
-in the project root directory (`project-root/FS-name/file-name`).
+in the project root directory.
 
 ```json
 {
@@ -109,8 +124,15 @@ in the project root directory (`project-root/FS-name/file-name`).
     "two": {
       "files": {
         "ccc.ext": {}
+      },
+      "directories": {
+        "six": {
+          "files": {
+            "jjj.ext": {}
+          }
+        }
       }
-    },
+    }
   }
 }
 ```
@@ -120,20 +142,52 @@ will build to:
 ./meta/one/aaa.ext -> ./one/aaa.ext
 ./meta/one/bbb.ext -> ./one/bbb.ext
 ./meta/two/ccc.ext -> ./two/ccc.ext
+./meta/two/six/jjj.ext -> ./two/six/jjj.ext
 ```
 
+### File Location Modifications
 
-More FS option keys are:
-- `from: "source-directory"` for specifying a sub-directory in the meta directory where the source file will be found.
-- `dest: "destination-directory"` for modifying the destination path output files. Various options are available (consider FS key `b` in FS key `a`):
-  - specifying an additional directory name or path (`dest: "c"` -> `a/c/file.ext`, `dest: "c/d"` -> `a/c/d/file.ext`)
-  - using a `./` to ignore the FS key, not making a sub-directory (`dest: "./"` -> `a/file.ext`, `dest: "./c"` -> `a/c/file.ext`)
-  - using a `/` to go back to the project root (`dest: "/"` -> `file.ext`, `dest: "/c"` -> `c/file.ext`)
-- `copyfiles: true` to only copy file and skip parsing.
-- `directories: { FS-name: {} }` for specifying child FSs. Note that child FSs act as sub-directories in the output path.
+The source and destination paths can be modified with the `from` and `dest` keys. Consider the example:
 
-## Using as stand-alone
+```json
+{
+  "directories": {
+    "one": {
+      "directories": {
+        "two": {
+          "dest": D,
+          "files": {
+            "aaa.ext": {}
+          }
+        }
+      }
+    }
+  }
+}
+```
 
+D can be replaced as follows to modify the destination location:
+```
+D = "" (no effect)
+./meta/one/two/aaa.ext -> ./one/two/aaa.ext
 
-## Implementing your own builder
+D = "sub" (add sub directory)
+./meta/one/two/aaa.ext -> ./one/two/sub/aaa.ext
 
+D = "sub/sub" (add sub directories)
+./meta/one/two/aaa.ext -> ./one/two/sub/sub/aaa.ext
+
+D = "." (stay in current directory)
+./meta/one/two/aaa.ext -> ./one/aaa.ext
+
+D = "sub" (sub directory from current directory)
+./meta/one/two/aaa.ext -> ./one/sub/aaa.ext
+
+D = "/" (back to root directory)
+./meta/one/two/aaa.ext -> ./aaa.ext
+
+D = "/sub" (sub directory from current directory)
+./meta/one/two/aaa.ext -> ./sub/aaa.ext
+```
+
+The `from` key can be used in the same way as the `dest` was use above to modify the source location.
