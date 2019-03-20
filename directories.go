@@ -40,7 +40,7 @@ func (dir *FSDirectory) CalculateHash() error {
 	return nil
 }
 
-func processFS(location string, b BackRef, m *refmap.RefMap, opts ...string) error {
+func ProcessFSs(location string, b BackRef, m *refmap.RefMap, opts ...string) error {
 	for name, fs := range b.FileStructure() {
 		fs.Parent = b
 
@@ -56,7 +56,7 @@ func processFS(location string, b BackRef, m *refmap.RefMap, opts ...string) err
 		}
 
 		fs.Name = name
-		err := processDir(fs, m)
+		err := processFS(fs, m)
 		if err != nil {
 			return err
 		}
@@ -65,7 +65,7 @@ func processFS(location string, b BackRef, m *refmap.RefMap, opts ...string) err
 }
 
 type PrjData struct {
-	Prj *Project
+	Prj *project
 	FSF *FSFile
 }
 
@@ -81,7 +81,7 @@ func (d PrjData) File() *FSFile {
 	return d.FSF
 }
 
-func (d PrjData) Project() *Project {
+func (d PrjData) Project() *project {
 	return d.Prj
 }
 
@@ -94,7 +94,7 @@ func buildBranch(m branchBuilder) DataBranch {
 
 	for {
 		switch v := stepper.(type) {
-		case *Project:
+		case *project:
 			return m.SetBranch(&PrjData{
 				Prj: v,
 			})
@@ -106,7 +106,7 @@ func buildBranch(m branchBuilder) DataBranch {
 	return nil
 }
 
-func processDir(fs *FSDirectory, m *refmap.RefMap) error {
+func processFS(fs *FSDirectory, m *refmap.RefMap) error {
 	buildBranch(fs)
 
 	err := fs.CalculateHash()
@@ -122,7 +122,7 @@ func processDir(fs *FSDirectory, m *refmap.RefMap) error {
 		dir.SourcePath = filepath.Join(fs.SourcePath, name)
 		dir.DestinationPath = filepath.Join(fs.DestinationPath, name)
 		dir.Name = name
-		err := processDir(dir, m)
+		err := processFS(dir, m)
 		if err != nil {
 			return err
 		}

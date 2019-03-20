@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	project     *Project
+	project     Project
 	source      string
 	destination string
 	force       bool
@@ -90,12 +90,12 @@ func (c Config) RegisterCmd(name string, cmd []string, timeOutOpt ...int) {
 	c.refMap.Register(name, cmd, timeOut)
 }
 
-func (c *Config) Load(mf ...string) {
+func (c *Config) Load(p Project, mf ...string) {
 	if c.err != nil {
 		return
 	}
 
-	c.project = NewProject(&c.err)
+	c.project = p
 
 	if len(mf) > 0 {
 		c.metaFile = mf[0]

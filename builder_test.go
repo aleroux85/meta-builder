@@ -18,7 +18,8 @@ func TestBuild(t *testing.T) {
 	defer destruct(testPath)
 
 	c := builder.NewConfig(srcPath, testPath)
-	c.Load(metaFilePath)
+	p := builder.NewProject()
+	c.Load(p, metaFilePath)
 	c.BuildAll(false)
 	if c.Error() != nil {
 		t.Errorf("%+v\n", c.Error())

@@ -10,7 +10,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Project struct {
+type Project interface {
+	CalculateHash()
+	Load(string)
+	LoadSecrets(string)
+	Process(*refmap.RefMap)
+}
+
+type project struct {
 	Description string   `json:"description"`
 	Mode        string   `json:"-"`
 	Secrets     []string `json:"-"`
@@ -18,9 +25,9 @@ type Project struct {
 	Error *error `json:"-"`
 }
 
-func NewProject(err ...*error) *Project {
+func NewProject(err ...*error) *project {
 	var newError error
-	p := &Project{
+	p := &project{
 		Entity: Entity{
 			changeDetector: changeDetector{},
 		},
@@ -34,19 +41,20 @@ func NewProject(err ...*error) *Project {
 	return p
 }
 
-func (p *Project) CalculateHash() error {
-	var err error
+func (p *project) CalculateHash() {
+	if *p.Error != nil {
+		return
+	}
 
 	pTemp := *p
 	pTemp.Directories = nil
-	err = p.Entity.changeDetector.CalculateHash(pTemp)
+	err := p.Entity.changeDetector.CalculateHash(pTemp)
 	if err != nil {
-		return err
+		*p.Error = err
 	}
-	return nil
 }
 
-func (p *Project) Load(fn string) {
+func (p *project) Load(fn string) {
 	if *p.Error != nil {
 		return
 	}
@@ -64,22 +72,18 @@ func (p *Project) Load(fn string) {
 	}
 }
 
-func (p *Project) Process(m *refmap.RefMap) {
+func (p *project) Process(m *refmap.RefMap) {
 
-	err := p.CalculateHash()
-	if err != nil {
-		*p.Error = err
-		return
-	}
+	p.CalculateHash()
 
-	err = processFS("", p, m)
+	err := ProcessFSs("", p, m)
 	if err != nil {
 		*p.Error = err
 		return
 	}
 }
 
-func (p *Project) LoadSecrets(fn string) {
+func (p *project) LoadSecrets(fn string) {
 	if *p.Error != nil {
 		return
 	}
