@@ -21,11 +21,11 @@ func (d PrjData) Project() *Project {
 	return d.Prj
 }
 
-type branchSetter interface {
+type BranchSetter interface {
 	SetBranch(...DataBranch) DataBranch
 }
 
-func buildBranch(m branchSetter) {
+func buildBranch(m BranchSetter) {
 	stepper := m.(BackRef)
 
 	for {

@@ -40,7 +40,7 @@ func (dir *FSDirectory) CalculateHash() error {
 	return nil
 }
 
-func ProcessFS(bb func(branchSetter), fs *FSDirectory, m *refmap.RefMap) error {
+func ProcessFS(bb func(BranchSetter), fs *FSDirectory, m *refmap.RefMap) error {
 	bb(fs)
 
 	err := fs.CalculateHash()
