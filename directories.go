@@ -27,10 +27,6 @@ func (fs *FSDirectory) SetBranch(branch ...DataBranch) DataBranch {
 	return fs.Branch
 }
 
-func (fs *FSDirectory) BuildBranch() {
-	buildBranch(fs)
-}
-
 func (dir *FSDirectory) CalculateHash() error {
 	var err error
 
@@ -44,9 +40,8 @@ func (dir *FSDirectory) CalculateHash() error {
 	return nil
 }
 
-func ProcessFS(fs *FSDirectory, m *refmap.RefMap) error {
-	// bb(fs)
-	fs.BuildBranch()
+func ProcessFS(bb func(branchSetter), fs *FSDirectory, m *refmap.RefMap) error {
+	bb(fs)
 
 	err := fs.CalculateHash()
 	if err != nil {
@@ -61,7 +56,7 @@ func ProcessFS(fs *FSDirectory, m *refmap.RefMap) error {
 		dir.SourcePath = filepath.Join(fs.SourcePath, name)
 		dir.DestinationPath = filepath.Join(fs.DestinationPath, name)
 		dir.Name = name
-		err := ProcessFS(dir, m)
+		err := ProcessFS(bb, dir, m)
 		if err != nil {
 			return err
 		}

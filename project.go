@@ -84,7 +84,7 @@ func (p *Project) Process(m *refmap.RefMap) {
 		fs.DestinationPath = filepath.Join("", name)
 
 		fs.Name = name
-		err := ProcessFS(fs, m)
+		err := ProcessFS(buildBranch, fs, m)
 		if err != nil {
 			*p.Error = err
 			return
