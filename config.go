@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	project     Project
+	project     ProjectLoader
 	source      string
 	destination string
 	force       bool
@@ -90,7 +90,7 @@ func (c Config) RegisterCmd(name string, cmd []string, timeOutOpt ...int) {
 	c.refMap.Register(name, cmd, timeOut)
 }
 
-func (c *Config) Load(p Project, mf ...string) {
+func (c *Config) Load(p ProjectLoader, mf ...string) {
 	if c.err != nil {
 		return
 	}

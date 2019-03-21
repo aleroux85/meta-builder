@@ -1,7 +1,7 @@
 package builder
 
 type PrjData struct {
-	Prj *project
+	Prj *Project
 	FSF *FSFile
 }
 
@@ -17,7 +17,7 @@ func (d PrjData) File() *FSFile {
 	return d.FSF
 }
 
-func (d PrjData) Project() *project {
+func (d PrjData) Project() *Project {
 	return d.Prj
 }
 
@@ -30,7 +30,7 @@ func buildBranch(m branchBuilder) {
 
 	for {
 		switch v := stepper.(type) {
-		case *project:
+		case *Project:
 			m.SetBranch(&PrjData{
 				Prj: v,
 			})

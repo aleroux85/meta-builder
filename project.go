@@ -11,14 +11,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Project interface {
+type ProjectLoader interface {
 	CalculateHash()
 	Load(string)
 	LoadSecrets(string)
 	Process(*refmap.RefMap)
 }
 
-type project struct {
+type Project struct {
 	Description string   `json:"description"`
 	Mode        string   `json:"-"`
 	Secrets     []string `json:"-"`
@@ -26,9 +26,9 @@ type project struct {
 	Error *error `json:"-"`
 }
 
-func NewProject(err ...*error) *project {
+func NewProject(err ...*error) *Project {
 	var newError error
-	p := &project{
+	p := &Project{
 		Entity: Entity{
 			changeDetector: changeDetector{},
 		},
@@ -42,7 +42,7 @@ func NewProject(err ...*error) *project {
 	return p
 }
 
-func (p *project) CalculateHash() {
+func (p *Project) CalculateHash() {
 	if *p.Error != nil {
 		return
 	}
@@ -55,7 +55,7 @@ func (p *project) CalculateHash() {
 	}
 }
 
-func (p *project) Load(fn string) {
+func (p *Project) Load(fn string) {
 	if *p.Error != nil {
 		return
 	}
@@ -73,7 +73,7 @@ func (p *project) Load(fn string) {
 	}
 }
 
-func (p *project) Process(m *refmap.RefMap) {
+func (p *Project) Process(m *refmap.RefMap) {
 
 	p.CalculateHash()
 
@@ -92,7 +92,7 @@ func (p *project) Process(m *refmap.RefMap) {
 	}
 }
 
-func (p *project) LoadSecrets(fn string) {
+func (p *Project) LoadSecrets(fn string) {
 	if *p.Error != nil {
 		return
 	}
