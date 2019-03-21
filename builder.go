@@ -20,10 +20,12 @@ type DataBranch interface {
 
 type Entity struct {
 	Name        string                  `json:"name"`
+	Description string                  `json:"description"`
 	Directories map[string]*FSDirectory `json:"directories"`
 	Execs       map[string]*Exec        `json:"execs"`
 	Branch      DataBranch              `json:"-"`
 	Parent      BackRef                 `json:"-"`
+	Error       *error                  `json:"-"`
 	changeDetector
 }
 

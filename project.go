@@ -19,11 +19,9 @@ type ProjectLoader interface {
 }
 
 type Project struct {
-	Description string   `json:"description"`
-	Mode        string   `json:"-"`
-	Secrets     []string `json:"-"`
+	Mode    string   `json:"-"`
+	Secrets []string `json:"-"`
 	Entity
-	Error *error `json:"-"`
 }
 
 func NewProject(err ...*error) *Project {
