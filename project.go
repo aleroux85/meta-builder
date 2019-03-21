@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/aleroux85/meta-builder/refmap"
 	"github.com/aleroux85/utils"
@@ -76,10 +77,18 @@ func (p *project) Process(m *refmap.RefMap) {
 
 	p.CalculateHash()
 
-	err := ProcessFSs("", p, m)
-	if err != nil {
-		*p.Error = err
-		return
+	for name, fs := range p.Directories {
+		fs.Parent = p
+
+		fs.SourcePath = filepath.Join("", name)
+		fs.DestinationPath = filepath.Join("", name)
+
+		fs.Name = name
+		err := ProcessFS(buildBranch, fs, m)
+		if err != nil {
+			*p.Error = err
+			return
+		}
 	}
 }
 
