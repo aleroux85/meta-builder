@@ -40,10 +40,6 @@ func (file *FSFile) CalculateHash() error {
 	return nil
 }
 
-func (file *FSFile) Hash() string {
-	return file.changeDetector.hash
-}
-
 func (file *FSFile) SetChange(change ...uint8) uint8 {
 	if len(change) > 0 {
 		file.change = change[0]

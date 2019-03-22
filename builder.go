@@ -51,6 +51,10 @@ type changeDetector struct {
 	change uint8  `json:"-"`
 }
 
+func (cd changeDetector) Hash() string {
+	return cd.hash
+}
+
 func (cd *changeDetector) CalculateHash(m interface{}) error {
 	json, err := json.Marshal(m)
 	if err != nil {
