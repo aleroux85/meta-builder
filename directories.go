@@ -40,12 +40,13 @@ func (dir *FSDirectory) CalculateHash() error {
 	return nil
 }
 
-func ProcessFS(bb func(BranchSetter), fs *FSDirectory, m *refmap.RefMap) error {
+func ProcessFS(bb func(BranchSetter), fs *FSDirectory, m *refmap.RefMap) {
 	bb(fs)
 
 	err := fs.CalculateHash()
 	if err != nil {
-		return err
+		fs.Error = &err
+		return
 	}
 
 	fs.SourcePath = path(fs.SourcePath, fs.Source)
@@ -56,10 +57,7 @@ func ProcessFS(bb func(BranchSetter), fs *FSDirectory, m *refmap.RefMap) error {
 		dir.SourcePath = filepath.Join(fs.SourcePath, name)
 		dir.DestinationPath = filepath.Join(fs.DestinationPath, name)
 		dir.Name = name
-		err := ProcessFS(bb, dir, m)
-		if err != nil {
-			return err
-		}
+		ProcessFS(bb, dir, m)
 	}
 
 	for name, file := range fs.Files {
@@ -68,7 +66,8 @@ func ProcessFS(bb func(BranchSetter), fs *FSDirectory, m *refmap.RefMap) error {
 
 		err := file.CalculateHash()
 		if err != nil {
-			return err
+			fs.Error = &err
+			return
 		}
 
 		filename := name
@@ -82,8 +81,6 @@ func ProcessFS(bb func(BranchSetter), fs *FSDirectory, m *refmap.RefMap) error {
 			m.Write(source, destination, file)
 		}
 	}
-
-	return nil
 }
 
 func path(path, modify string) string {
