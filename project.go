@@ -18,6 +18,7 @@ type ProjectLoader interface {
 }
 
 type Project struct {
+	Repo    string   `json:"repository"`
 	Mode    string   `json:"-"`
 	Secrets []string `json:"-"`
 	Entity

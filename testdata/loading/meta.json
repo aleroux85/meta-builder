@@ -1,5 +1,6 @@
 {
   "name": "a",
+  "repository": "here.tld/there",
   "directories": {
     "aa": {
       "files": {"aaa.ext": {}},

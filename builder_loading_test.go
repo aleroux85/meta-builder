@@ -99,6 +99,11 @@ func TestLoadProcess(t *testing.T) {
 			got:  "a",
 		},
 		{
+			desc: "1B Project Repo",
+			exp:  project.Repo,
+			got:  "here.tld/there",
+		},
+		{
 			desc: "2A Project Directory aa Name",
 			exp:  project.Directories["aa"].Name,
 			got:  "aa",
