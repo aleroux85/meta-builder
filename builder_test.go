@@ -31,6 +31,9 @@ func TestBuild(t *testing.T) {
 	if _, err := os.Stat(testPath + "/aa/aaa.ext"); err != nil {
 		t.Error(err)
 	}
+	if _, err := os.Stat(testPath + "/aa/aab.ext"); err != nil {
+		t.Error(err)
+	}
 	if _, err := os.Stat(testPath + "/aa/aaa/aaaa.ext"); err != nil {
 		t.Error(err)
 	}
@@ -74,6 +77,11 @@ func TestBuild(t *testing.T) {
 			exp:  "Octagon",
 		},
 		{
+			desc: "1B copy file",
+			path: "/aa/aab.ext",
+			exp:  "{{ .Prj.Name }}",
+		},
+		{
 			desc: "2A Plural method",
 			path: "/aa/aac.ext",
 			exp:  "Chickens",
@@ -111,6 +119,7 @@ func construct(srcFolder string) {
 	f1.WriteString("{{ .Prj.Name }}")
 	f1.Close()
 	f1, _ = os.Create(srcFolder + "/aa/aab.ext.tmpl")
+	f1.WriteString("{{ .Prj.Name }}")
 	f1.Close()
 	f1, _ = os.Create(srcFolder + "/aa/aac.ext")
 	f1.WriteString(`{{ .Plural "Chicken" }}`)

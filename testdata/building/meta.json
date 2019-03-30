@@ -4,7 +4,7 @@
     "aa": {
       "files": {
         "aaa.ext": {},
-        "aab.ext.tmpl": {},
+        "aab.ext.tmpl": {"copy": true},
         "aac.ext": {},
         "aad.ext": {},
         "aae.ext": {}
