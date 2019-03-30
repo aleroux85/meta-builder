@@ -4,6 +4,10 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"strings"
+
+	"github.com/jinzhu/inflection"
 )
 
 type BackRef interface {
@@ -76,4 +80,30 @@ func (cd *changeDetector) CalculateHash(m interface{}) error {
 	cd.hash = fmt.Sprintf("%x", h.Sum(nil))
 
 	return nil
+}
+
+type TemplateMethods struct {
+}
+
+func (TemplateMethods) Clean(s string) string {
+	reg, _ := regexp.Compile("[^a-zA-Z]+")
+	return reg.ReplaceAllString(s, "")
+}
+
+func (TemplateMethods) Upper(s string) string {
+	return strings.ToUpper(s)
+}
+
+func (TemplateMethods) CleanUpper(s string) string {
+	reg, _ := regexp.Compile("[^a-zA-Z]+")
+	clean := reg.ReplaceAllString(s, "")
+	return strings.ToUpper(clean)
+}
+
+func (TemplateMethods) Title(s string) string {
+	return strings.Title(s)
+}
+
+func (TemplateMethods) Plural(s string) string {
+	return inflection.Plural(s)
 }

@@ -151,6 +151,7 @@ func (p *Project) LoadSecrets(fn string) {
 }
 
 type PrjData struct {
+	TemplateMethods
 	Prj *Project
 	FSF *FSFile
 }

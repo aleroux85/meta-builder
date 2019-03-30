@@ -1,6 +1,7 @@
 package builder_test
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -61,6 +62,45 @@ func TestBuild(t *testing.T) {
 	if _, err := os.Stat(testPath + "/acaa.ext"); err != nil {
 		t.Error(err)
 	}
+
+	testCases := []struct {
+		desc string
+		path string
+		exp  string
+	}{
+		{
+			desc: "1A Project Name",
+			path: "/aa/aaa.ext",
+			exp:  "Octagon",
+		},
+		{
+			desc: "2A Plural method",
+			path: "/aa/aac.ext",
+			exp:  "Chickens",
+		},
+		{
+			desc: "2B Title and Upper methods",
+			path: "/aa/aad.ext",
+			exp:  "Title UPPER",
+		},
+		{
+			desc: "2C Clean and CleanUpper methods",
+			path: "/aa/aae.ext",
+			exp:  "jackson JACKSON",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			got, err := ioutil.ReadFile(testPath + tC.path)
+			if err != nil {
+				t.Error(err)
+				t.FailNow()
+			}
+			if tC.exp != string(got) {
+				t.Errorf(`expected "%s", got "%s"`, tC.exp, got)
+			}
+		})
+	}
 }
 
 func construct(srcFolder string) {
@@ -73,10 +113,13 @@ func construct(srcFolder string) {
 	f1, _ = os.Create(srcFolder + "/aa/aab.ext.tmpl")
 	f1.Close()
 	f1, _ = os.Create(srcFolder + "/aa/aac.ext")
-	f1.WriteString("test")
+	f1.WriteString(`{{ .Plural "Chicken" }}`)
 	f1.Close()
 	f1, _ = os.Create(srcFolder + "/aa/aad.ext")
-	f1.WriteString("{{ .Prj.Name }}")
+	f1.WriteString(`{{ .Title "title" }} {{ .Upper "upper" }}`)
+	f1.Close()
+	f1, _ = os.Create(srcFolder + "/aa/aae.ext")
+	f1.WriteString(`{{ .Clean "jack6&son" }} {{ .CleanUpper "jack6&son" }}`)
 	f1.Close()
 	os.Mkdir(srcFolder+"/aa/aaa", os.ModePerm)
 	f1, _ = os.Create(srcFolder + "/aa/aaa/aaaa.ext")

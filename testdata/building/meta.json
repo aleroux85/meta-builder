@@ -1,8 +1,14 @@
 {
-  "name": "a",
+  "name": "Octagon",
   "directories": {
     "aa": {
-      "files": {"aaa.ext": {}},
+      "files": {
+        "aaa.ext": {},
+        "aab.ext.tmpl": {},
+        "aac.ext": {},
+        "aad.ext": {},
+        "aae.ext": {}
+      },
       "directories": {
         "aaa": {
           "files": {"aaaa.ext": {}},
