@@ -25,18 +25,18 @@ func (o WriteOp) handle(location string, refs map[string]*RefLink) {
 
 	if _, found := refs[source].Files[o.dst]; !found {
 		refs[source].Files[o.dst] = o.val
-		refs[source].Files[o.dst].SetChange(DataAdded)
+		refs[source].Files[o.dst].Change(DataAdded)
 		fmt.Printf("adding %s\t-> %s\n", source, o.dst)
 	} else {
-		if refs[source].Files[o.dst].SetChange() == DataAdded {
-			o.val.SetChange(DataAdded)
+		if refs[source].Files[o.dst].Change() == DataAdded {
+			o.val.Change(DataAdded)
 			//TODO add warning
 			goto replace
 		}
 		if refs[source].Files[o.dst].Hash() == o.val.Hash() {
-			o.val.SetChange(DataFlagged)
+			o.val.Change(DataFlagged)
 		} else {
-			o.val.SetChange(DataUpdated)
+			o.val.Change(DataUpdated)
 			fmt.Printf("updating %s\t-> %s\n", source, o.dst)
 		}
 	replace:

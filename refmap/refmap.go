@@ -68,7 +68,7 @@ type Config interface {
 
 type RefVal interface {
 	Build(Config)
-	SetChange(...uint8) uint8
+	Change(...uint8) uint8
 	Hash() string
 }
 

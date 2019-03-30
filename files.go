@@ -40,13 +40,6 @@ func (file *FSFile) CalculateHash() error {
 	return nil
 }
 
-func (file *FSFile) SetChange(change ...uint8) uint8 {
-	if len(change) > 0 {
-		file.change = change[0]
-	}
-	return file.change
-}
-
 func (file *FSFile) Build(c refmap.Config) {
 	if c.Error() != nil {
 		return

@@ -48,8 +48,8 @@ func assess(refs map[string]*RefLink) {
 			continue
 		}
 		for _, file := range ref.Files {
-			if file.SetChange() == DataStable {
-				file.SetChange(DataRemove)
+			if file.Change() == DataStable {
+				file.Change(DataRemove)
 			}
 		}
 	}
@@ -69,15 +69,15 @@ func finish(refs map[string]*RefLink) {
 		ref.Change = DataStable
 
 		for dst, file := range ref.Files {
-			if file.SetChange() == DataRemove {
+			if file.Change() == DataRemove {
 				fmt.Println("removing", src, ":", dst, "from refmap")
 				delete(ref.Files, dst)
 				continue
 			}
-			if file.SetChange() != DataFlagged && file.SetChange() != DataStable {
-				fmt.Println("setting", src, ":", dst, file.SetChange(), "-> stable")
+			if file.Change() != DataFlagged && file.Change() != DataStable {
+				fmt.Println("setting", src, ":", dst, file.Change(), "-> stable")
 			}
-			file.SetChange(DataStable)
+			file.Change(DataStable)
 		}
 	}
 }

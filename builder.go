@@ -55,6 +55,13 @@ func (cd changeDetector) Hash() string {
 	return cd.hash
 }
 
+func (cd changeDetector) Change(change ...uint8) uint8 {
+	if len(change) > 0 {
+		cd.change = change[0]
+	}
+	return cd.change
+}
+
 func (cd *changeDetector) CalculateHash(m interface{}) error {
 	json, err := json.Marshal(m)
 	if err != nil {
