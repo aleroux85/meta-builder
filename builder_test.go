@@ -77,11 +77,6 @@ func TestBuild(t *testing.T) {
 			exp:  "Octagon",
 		},
 		{
-			desc: "1B copy file",
-			path: "/aa/aab.ext",
-			exp:  "{{ .Prj.Name }}",
-		},
-		{
 			desc: "2A Plural method",
 			path: "/aa/aac.ext",
 			exp:  "Chickens",
@@ -96,6 +91,21 @@ func TestBuild(t *testing.T) {
 			path: "/aa/aae.ext",
 			exp:  "jackson JACKSON",
 		},
+		{
+			desc: "3A copy file",
+			path: "/aa/aab.ext",
+			exp:  "{{ .Prj.Name }}",
+		},
+		{
+			desc: "3B copy all files",
+			path: "/ad/ada/adaa.ext",
+			exp:  "{{ .Prj.Name }}",
+		},
+		// {
+		// 	desc: "3A ",
+		// 	path: "/ad/xt",
+		// 	exp:  "jackson JACKSON",
+		// },
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
@@ -168,6 +178,12 @@ func construct(srcFolder string) {
 	os.Mkdir(srcFolder+"/ac/aca", os.ModePerm)
 	f1, _ = os.Create(srcFolder + "/ac/aca/acaa.ext")
 	f1.Close()
+
+	os.Mkdir(srcFolder+"/ad", os.ModePerm)
+	os.Mkdir(srcFolder+"/ad/ada", os.ModePerm)
+	f1, _ = os.Create(srcFolder + "/ad/ada/adaa.ext")
+	f1.WriteString("{{ .Prj.Name }}")
+	f1.Close()
 }
 
 func destruct(testFolder string) {
@@ -180,5 +196,6 @@ func destruct(testFolder string) {
 	os.RemoveAll(testFolder + "/abba.ext")
 	os.RemoveAll(testFolder + "/jump")
 	os.RemoveAll(testFolder + "/acaa.ext")
+	os.RemoveAll(testFolder + "/ad")
 	os.RemoveAll(testFolder + "/passwords.json")
 }

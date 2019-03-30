@@ -12,7 +12,7 @@ type FSDirectory struct {
 	Source          string             `json:"from"`
 	Destination     string             `json:"dest"`
 	Files           map[string]*FSFile `json:"files"`
-	Copy            bool               `json:"copyfiles"`
+	Copy            bool               `json:"copy"`
 	Update          string             `json:"update"`
 	Template        *utils.Templax     `json:"-"`
 	SourcePath      string             `json:"-"`

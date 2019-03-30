@@ -57,6 +57,16 @@
           "files": {"acaa.ext": {}}
         }
       }
+    },
+    "ad": {
+      "directories": {
+        "ada": {
+          "copy": true,
+          "files": {
+            "adaa.ext": {}
+          }
+        }
+      }
     }
   }
 }
