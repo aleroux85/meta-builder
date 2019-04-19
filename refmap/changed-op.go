@@ -16,10 +16,17 @@ func (o ChangedOp) handle(refs map[string]*RefLink) {
 	close(o.Refs)
 }
 
-func (r RefMap) ChangedRefs() chan *RefLink {
+func (r RefMap) ChangedRefsChan() chan *RefLink {
 	changed := &ChangedOp{
 		Refs: make(chan *RefLink),
 	}
 	r.Changed <- changed
 	return changed.Refs
+}
+
+func (r RefMap) ChangedRefs() (refs []*RefLink) {
+	for ref := range r.ChangedRefsChan() {
+		refs = append(refs, ref)
+	}
+	return refs
 }

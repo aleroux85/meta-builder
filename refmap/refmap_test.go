@@ -44,8 +44,8 @@ func TestWriting(t *testing.T) {
 		if link.Files["b"].Hash() != "test_hash" {
 			t.Errorf(`expected "test_hash", got "%+v"`, link.Files["b"].Hash())
 		}
-		if link.Files["b"].SetChange() != DataAdded {
-			t.Errorf(`expected "%s", got "%s"`, status[DataAdded], status[link.Files["b"].SetChange()])
+		if link.Files["b"].Change() != DataAdded {
+			t.Errorf(`expected "%s", got "%s"`, status[DataAdded], status[link.Files["b"].Change()])
 		}
 		if link.Files["c"] == nil {
 			t.Errorf(`expected "%+v", got "<nil>"`, link.Files["c"])
@@ -54,8 +54,8 @@ func TestWriting(t *testing.T) {
 		if link.Files["c"].Hash() != "another_test_hash" {
 			t.Errorf(`expected "another_test_hash", got "%+v"`, link.Files["c"].Hash())
 		}
-		if link.Files["c"].SetChange() != DataAdded {
-			t.Errorf(`expected "%s", got "%s"`, status[DataAdded], status[link.Files["b"].SetChange()])
+		if link.Files["c"].Change() != DataAdded {
+			t.Errorf(`expected "%s", got "%s"`, status[DataAdded], status[link.Files["b"].Change()])
 		}
 	})
 
@@ -76,8 +76,8 @@ func TestWriting(t *testing.T) {
 		if link.Files["c"].Hash() != "changed_test_hash" {
 			t.Errorf(`expected "changed_test_hash", got "%+v"`, link.Files["c"].Hash())
 		}
-		if link.Files["c"].SetChange() != DataAdded {
-			t.Errorf(`expected "%s", got "%s"`, status[DataAdded], status[link.Files["c"].SetChange()])
+		if link.Files["c"].Change() != DataAdded {
+			t.Errorf(`expected "%s", got "%s"`, status[DataAdded], status[link.Files["c"].Change()])
 		}
 	})
 
@@ -99,8 +99,8 @@ func TestWriting(t *testing.T) {
 		if link.Files["c"].Hash() != "changed_test_hash" {
 			t.Errorf(`expected "changed_test_hash", got "%+v"`, link.Files["c"].Hash())
 		}
-		if link.Files["c"].SetChange() != DataFlagged {
-			t.Errorf(`expected "%s", got "%s"`, status[DataFlagged], status[link.Files["c"].SetChange()])
+		if link.Files["c"].Change() != DataFlagged {
+			t.Errorf(`expected "%s", got "%s"`, status[DataFlagged], status[link.Files["c"].Change()])
 		}
 	})
 
@@ -122,8 +122,8 @@ func TestWriting(t *testing.T) {
 		if link.Files["c"].Hash() != "another_changed_test_hash" {
 			t.Errorf(`expected "another_changed_test_hash", got "%+v"`, link.Files["c"].Hash())
 		}
-		if link.Files["c"].SetChange() != DataUpdated {
-			t.Errorf(`expected "%s", got "%s"`, status[DataUpdated], status[link.Files["c"].SetChange()])
+		if link.Files["c"].Change() != DataUpdated {
+			t.Errorf(`expected "%s", got "%s"`, status[DataUpdated], status[link.Files["c"].Change()])
 		}
 	})
 }
@@ -147,8 +147,8 @@ func TestRemove(t *testing.T) {
 	if link.Files["b"] == nil {
 		t.Error("expected not \"nil\"")
 	}
-	if link.Files["b"].SetChange() != DataStable {
-		t.Error("expected DataStable, got", link.Files["b"].SetChange())
+	if link.Files["b"].Change() != DataStable {
+		t.Error("expected DataStable, got", link.Files["b"].Change())
 	}
 
 	val = new(StubRefVal)
@@ -166,8 +166,8 @@ func TestRemove(t *testing.T) {
 	if link.Files["b"] == nil {
 		t.Error("expected not \"nil\"")
 	}
-	if link.Files["b"].SetChange() != DataRemove {
-		t.Error("expected DataRemove, got", link.Files["b"].SetChange())
+	if link.Files["b"].Change() != DataRemove {
+		t.Error("expected DataRemove, got", link.Files["b"].Change())
 	}
 
 	r.Finish()
@@ -217,8 +217,32 @@ func TestSetUpdate(t *testing.T) {
 	if link.Files["b"] == nil {
 		t.Error("expected not \"nil\"")
 	}
-	if link.Files["b"].SetChange() != DataStable {
-		t.Error("expected DataStable, got", link.Files["b"].SetChange())
+	if link.Files["b"].Change() != DataStable {
+		t.Error("expected DataStable, got", link.Files["b"].Change())
+	}
+
+	for _, link = range r.ChangedRefs() {
+		if link.Change != DataUpdated {
+			t.Error("expected DataUpdated, got", link.Change)
+		}
+		if link.Files["b"] == nil {
+			t.Error("expected not \"nil\"")
+		}
+		if link.Files["b"].Change() != DataStable {
+			t.Error("expected DataStable, got", link.Files["b"].Change())
+		}
+	}
+
+	for link = range r.ChangedRefsChan() {
+		if link.Change != DataUpdated {
+			t.Error("expected DataUpdated, got", link.Change)
+		}
+		if link.Files["b"] == nil {
+			t.Error("expected not \"nil\"")
+		}
+		if link.Files["b"].Change() != DataStable {
+			t.Error("expected DataStable, got", link.Files["b"].Change())
+		}
 	}
 
 	r.Assess()
@@ -321,7 +345,7 @@ func (r *StubRefVal) Build(c Config) {
 	r.built = true
 }
 
-func (r *StubRefVal) SetChange(v ...uint8) uint8 {
+func (r *StubRefVal) Change(v ...uint8) uint8 {
 	if len(v) > 0 {
 		r.change = v[0]
 	}

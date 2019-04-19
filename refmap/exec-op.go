@@ -35,7 +35,7 @@ func (o ExecOp) handle(execs map[string]command) {
 
 		if len(execs) == 0 {
 			o.Rsp <- ExecRsp{
-				More: len(execs) > 0,
+				More: false,
 			}
 			return
 		}

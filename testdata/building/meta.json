@@ -1,7 +1,23 @@
 {
   "name": "Octagon",
+  "execs": {
+      "a": {
+          "file": "ext$",
+          "exec": ["bash", "-c", "printf 'data' >> testdata/building/all"]
+      }
+  },
   "directories": {
     "aa": {
+      "execs": {
+        "b": {
+            "file": "^aaaaa.ext$",
+            "exec": ["bash", "-c", "printf 'data' >> testdata/building/aaaaa"]
+        },
+        "c": {
+            "file": "^aaaax.ext$",
+            "exec": ["bash", "-c", "printf 'data' >> testdata/building/aaaax"]
+        }
+      },
       "files": {
         "aaa.ext": {},
         "aab.ext.tmpl": {"copy": true},

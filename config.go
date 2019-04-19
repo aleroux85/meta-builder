@@ -1,6 +1,7 @@
 package builder
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/aleroux85/meta-builder/refmap"
@@ -87,6 +88,7 @@ func (c Config) RegisterCmd(name string, cmd []string, timeOutOpt ...int) {
 		timeOut = timeOutOpt[0]
 	}
 
+	fmt.Println("RegisterCmd", name, cmd, timeOut)
 	c.refMap.Register(name, cmd, timeOut)
 }
 
@@ -123,20 +125,29 @@ func (c *Config) BuildAll(force bool) {
 
 	c.Force(force)
 
-	changed := &refmap.ChangedOp{make(chan *refmap.RefLink)}
-	c.refMap.Changed <- changed
-	for ref := range changed.Refs {
+	for _, ref := range c.refMap.ChangedRefs() {
 		for _, val := range ref.Files {
 			val.Build(c)
 		}
 	}
 
-	rsp := c.refMap.Execute()
-	for rsp.More {
-		rsp = c.refMap.Execute()
+	rsp := c.rExec()
+	for rsp.More && c.err == nil {
+		rsp = c.rExec()
 	}
 
 	if c.err != nil {
 		c.err = errors.Wrap(c.err, "building")
 	}
+}
+
+func (c *Config) rExec() refmap.ExecRsp {
+	if c.err != nil {
+		return refmap.ExecRsp{}
+	}
+	rsp := c.refMap.Execute()
+	if rsp.Err != nil {
+		c.err = rsp.Err
+	}
+	return rsp
 }

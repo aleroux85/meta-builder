@@ -66,6 +66,11 @@ func TestBuild(t *testing.T) {
 		t.Error(err)
 	}
 
+	// files that should not exist
+	if _, err := os.Stat(testPath + "/aaaax"); err == nil {
+		t.Error("file aaaax should not exist")
+	}
+
 	testCases := []struct {
 		desc string
 		path string
@@ -101,11 +106,16 @@ func TestBuild(t *testing.T) {
 			path: "/ad/ada/adaa.ext",
 			exp:  "{{ .Prj.Name }}",
 		},
-		// {
-		// 	desc: "3A ",
-		// 	path: "/ad/xt",
-		// 	exp:  "jackson JACKSON",
-		// },
+		{
+			desc: "4A compile file",
+			path: "/all",
+			exp:  "data",
+		},
+		{
+			desc: "4B compile file",
+			path: "/aaaaa",
+			exp:  "data",
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
@@ -198,4 +208,6 @@ func destruct(testFolder string) {
 	os.RemoveAll(testFolder + "/acaa.ext")
 	os.RemoveAll(testFolder + "/ad")
 	os.RemoveAll(testFolder + "/passwords.json")
+	os.RemoveAll(testFolder + "/all")
+	os.RemoveAll(testFolder + "/aaaaa")
 }
