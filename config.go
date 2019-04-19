@@ -147,7 +147,12 @@ func (c *Config) rExec() refmap.ExecRsp {
 	}
 	rsp := c.refMap.Execute()
 	if rsp.Err != nil {
-		c.err = rsp.Err
+		if rsp.Err.Error() == "exit status 1" {
+
+		} else {
+			c.err = rsp.Err
+		}
+		fmt.Println("\n%+v\n", rsp)
 	}
 	return rsp
 }
