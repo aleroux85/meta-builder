@@ -62,6 +62,7 @@ The config file defines the project at the top level. The project structure is:
 {
   "name": "project-name",
   "directories": {},
+  "actions": {},
 }
 ```
 
@@ -191,3 +192,85 @@ D = "/sub" (sub directory from current directory)
 ```
 
 The `from` key can be used in the same way as the `dest` was use above to modify the source location.
+
+### Copying files only
+
+The `copy` key can be used at directory and file level to copy files directly.
+
+```json
+{
+  "directories": {
+    "one": {
+      "copy": true,
+      "files": {
+        "aaa.ext": {},
+        "bbb.ext": {}
+      }
+    },
+    "two": {
+      "files": {
+        "ccc.ext": {},
+        "ddd.ext": {"copy": true}
+      }
+    }
+  }
+}
+```
+
+In the example above, both files in directory `one` are copied but only `ddd.ext`
+in directory `two` is copied while `ccc.ext` is parsed as normal.
+By default the copy field will be false. If set to true, file parsing will be
+skipped.
+
+### Actions
+
+Commands can be executed on the generated files. They are specified in the
+`actions` key will typically look like:
+
+```
+"actions": {
+  "action-a": {
+    "pattern": "some-regex",
+    "command": ["program", "params", "..."]
+  }
+}
+```
+
+Whenever a filename matches the pattern, the command will be added to the
+actions list under the name of the action (`action-a` in the example above).
+After all files are generated, the builder will go through this list
+and execute the commands. The order is by default non-specific
+but can controlled with an optional `dependant` key.
+
+```
+"actions": {
+  "a": {
+    "pattern": "some-regex",
+    "command": ["program", "params", "..."],
+    "depends-on": ["b", "c"]
+  },
+  "b": {
+    "pattern": "some-regex",
+    "command": ["program", "params", "..."],
+  },
+  "c": {
+    "pattern": "some-regex",
+    "command": ["program", "params", "..."],
+  }
+}
+```
+
+In the example above action `a` will only be executed after `b` and `c` are executed.
+
+Specifying timeouts are also optional and can be done with the
+`timeout` key and an integer (unsigned) giving the time in milliseconds.
+
+```
+"actions": {
+  "a": {
+    "pattern": "some-regex",
+    "command": ["program", "params", "..."],
+    "timeout": 100
+  }
+}
+```

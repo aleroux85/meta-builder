@@ -82,14 +82,13 @@ func (c *Config) Error(err ...error) error {
 	return c.err
 }
 
-func (c Config) RegisterCmd(name string, cmd []string, timeOutOpt ...int) {
+func (c Config) RegisterCmd(name string, cmd, deps []string, timeOutOpt ...int) {
 	timeOut := 0
 	if len(timeOutOpt) > 0 {
 		timeOut = timeOutOpt[0]
 	}
 
-	fmt.Println("RegisterCmd", name, cmd, timeOut)
-	c.refMap.Register(name, cmd, timeOut)
+	c.refMap.Register(name, cmd, deps, timeOut)
 }
 
 func (c *Config) Load(p ProjectLoader, mf ...string) {
@@ -131,28 +130,15 @@ func (c *Config) BuildAll(force bool) {
 		}
 	}
 
-	rsp := c.rExec()
-	for rsp.More && c.err == nil {
-		rsp = c.rExec()
+	for _, act := range c.refMap.Execute() {
+		fmt.Printf("%v\n%v", act.StdOut, act.StdErr)
+
+		if act.Err != nil {
+			c.err = act.Err
+		}
 	}
 
 	if c.err != nil {
 		c.err = errors.Wrap(c.err, "building")
 	}
-}
-
-func (c *Config) rExec() refmap.ExecRsp {
-	if c.err != nil {
-		return refmap.ExecRsp{}
-	}
-	rsp := c.refMap.Execute()
-	if rsp.Err != nil {
-		if rsp.Err.Error() == "exit status 1" {
-			fmt.Printf("\n%v\n%v\n%v\n", rsp.Err.Error(), rsp.StdOut, rsp.StdErr)
-		} else {
-			c.err = rsp.Err
-		}
-		fmt.Printf("\n%+v\n", rsp)
-	}
-	return rsp
 }

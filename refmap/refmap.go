@@ -28,15 +28,10 @@ func NewRefMap() *RefMap {
 	return m
 }
 
-type command struct {
-	Cmd     []string
-	TimeOut int
-}
-
 func (m *RefMap) Start() {
 	go func() {
 		refs := make(map[string]*RefLink)
-		execs := make(map[string]command)
+		execs := make(map[string]action)
 		startLocation := ""
 
 		for {
@@ -63,7 +58,7 @@ type Config interface {
 	Destination(...string) string
 	Source(...string) string
 	Force(...bool) bool
-	RegisterCmd(string, []string, ...int)
+	RegisterCmd(string, []string, []string, ...int)
 }
 
 type RefVal interface {

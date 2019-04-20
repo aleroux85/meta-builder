@@ -10,72 +10,71 @@ import (
 
 type ExecOp struct {
 	Key     string
-	Act     string
+	Op      string
 	Cmd     []string
+	Deps    []string
 	TimeOut int
 	Rsp     chan ExecRsp
 }
 
 type ExecRsp struct {
-	More           bool
 	Key            string
 	StdOut, StdErr string
 	Err            error
 }
 
-func (o ExecOp) handle(execs map[string]command) {
-	if o.Act != "register" && o.Act != "execute" {
+type action struct {
+	Cmd     []string
+	Deps    []string
+	TimeOut int
+}
+
+func (act action) exec(stdOut, stdErr *bytes.Buffer) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(act.TimeOut)*time.Millisecond)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, act.Cmd[0], act.Cmd[1:]...)
+
+	cmd.Stdout = stdOut
+	cmd.Stderr = stdErr
+	return cmd.Run()
+}
+
+func (o ExecOp) handle(actions map[string]action) {
+	if o.Op != "register" && o.Op != "execute" {
 		o.Rsp <- ExecRsp{}
 		return
 	}
 
-	if o.Act == "execute" {
-		var key string
-		var exc command
-
-		if len(execs) == 0 {
-			o.Rsp <- ExecRsp{
-				More: false,
-			}
+	if o.Op == "execute" {
+		if len(actions) == 0 {
+			close(o.Rsp)
 			return
 		}
 
-		for key, exc = range execs {
-			break
+		for key := range actions {
+			err := o.execute(actions, key)
+			if err != nil {
+				for key := range actions {
+					delete(actions, key)
+				}
+				break
+			}
 		}
 
-		fmt.Println("executing command", key, exc.Cmd)
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(exc.TimeOut)*time.Millisecond)
-		defer cancel()
-
-		cmd := exec.CommandContext(ctx, exc.Cmd[0], exc.Cmd[1:]...)
-
-		var stdOut, stdErr bytes.Buffer
-		cmd.Stdout = &stdOut
-		cmd.Stderr = &stdErr
-		err := cmd.Run()
-
-		o.Rsp <- ExecRsp{
-			More:   len(execs) > 1,
-			Key:    key,
-			StdOut: stdOut.String(),
-			StdErr: stdErr.String(),
-			Err:    err,
-		}
-
-		delete(execs, key)
+		close(o.Rsp)
 		return
 	}
 
-	if _, found := execs[o.Key]; !found {
+	if _, found := actions[o.Key]; !found {
 		timeOut := 1000
 		if o.TimeOut > 0 {
 			timeOut = o.TimeOut
 		}
 
-		execs[o.Key] = command{
+		actions[o.Key] = action{
 			Cmd:     o.Cmd,
+			Deps:    o.Deps,
 			TimeOut: timeOut,
 		}
 		fmt.Println("registered command", o.Key, o.Cmd)
@@ -83,7 +82,45 @@ func (o ExecOp) handle(execs map[string]command) {
 	o.Rsp <- ExecRsp{}
 }
 
-func (r RefMap) Register(key string, cmd []string, timeOutOpt ...int) {
+func (o ExecOp) execute(actions map[string]action, key string) error {
+	var stdOut, stdErr bytes.Buffer
+
+	action, found := actions[key]
+	if !found {
+		return nil
+	}
+
+	for _, dep := range action.Deps {
+		err := o.execute(actions, dep)
+		if err != nil {
+			return err
+		}
+	}
+
+	fmt.Println("executing command", key, action.Cmd)
+	err := action.exec(&stdOut, &stdErr)
+	if err != nil {
+		o.Rsp <- ExecRsp{
+			Key:    key,
+			StdOut: stdOut.String(),
+			StdErr: stdErr.String(),
+			Err:    err,
+		}
+		return err
+	}
+
+	o.Rsp <- ExecRsp{
+		Key:    key,
+		StdOut: stdOut.String(),
+		StdErr: stdErr.String(),
+		Err:    nil,
+	}
+
+	delete(actions, key)
+	return nil
+}
+
+func (r RefMap) Register(key string, cmd, deps []string, timeOutOpt ...int) {
 	timeOut := 0
 	if len(timeOutOpt) > 0 {
 		timeOut = timeOutOpt[0]
@@ -91,8 +128,9 @@ func (r RefMap) Register(key string, cmd []string, timeOutOpt ...int) {
 
 	register := &ExecOp{
 		Key:     key,
-		Act:     "register",
+		Op:      "register",
 		Cmd:     cmd,
+		Deps:    deps,
 		TimeOut: timeOut,
 		Rsp:     make(chan ExecRsp),
 	}
@@ -100,11 +138,16 @@ func (r RefMap) Register(key string, cmd []string, timeOutOpt ...int) {
 	<-register.Rsp
 }
 
-func (r RefMap) Execute() ExecRsp {
+func (r RefMap) Execute() []ExecRsp {
 	execute := &ExecOp{
-		Act: "execute",
+		Op:  "execute",
 		Rsp: make(chan ExecRsp),
 	}
 	r.Exec <- execute
-	return <-execute.Rsp
+	var responses []ExecRsp
+	for response := range execute.Rsp {
+		responses = append(responses, response)
+	}
+
+	return responses
 }

@@ -12,7 +12,7 @@ import (
 
 type BackRef interface {
 	FileStructure() map[string]*FSDirectory
-	CmdMatch() map[string]*Exec
+	CmdMatch() map[string]*Action
 	Up() BackRef
 }
 
@@ -26,7 +26,7 @@ type Entity struct {
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
 	Directories map[string]*FSDirectory `json:"directories"`
-	Execs       map[string]*Exec        `json:"execs"`
+	Actions     map[string]*Action      `json:"actions"`
 	Branch      DataBranch              `json:"-"`
 	Parent      BackRef                 `json:"-"`
 	Error       *error                  `json:"-"`
@@ -37,17 +37,18 @@ func (m Entity) FileStructure() map[string]*FSDirectory {
 	return m.Directories
 }
 
-func (m Entity) CmdMatch() map[string]*Exec {
-	return m.Execs
+func (m Entity) CmdMatch() map[string]*Action {
+	return m.Actions
 }
 
 func (m Entity) Up() BackRef {
 	return m.Parent
 }
 
-type Exec struct {
-	File string   `json:"file"`
-	Exec []string `json:"exec"`
+type Action struct {
+	Pattern string   `json:"pattern"`
+	Cmd     []string `json:"cmd"`
+	Deps    []string `json:"depends-on"`
 }
 
 type changeDetector struct {

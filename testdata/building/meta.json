@@ -1,21 +1,21 @@
 {
   "name": "Octagon",
-  "execs": {
+  "actions": {
       "a": {
-          "file": "ext$",
-          "exec": ["bash", "-c", "printf 'data' >> testdata/building/all"]
+          "pattern": "ext$",
+          "cmd": ["bash", "-c", "printf 'data' >> testdata/building/all"]
       }
   },
   "directories": {
     "aa": {
-      "execs": {
+      "actions": {
         "b": {
-            "file": "^aaaaa.ext$",
-            "exec": ["bash", "-c", "printf 'data' >> testdata/building/aaaaa"]
+            "pattern": "^aaaaa.ext$",
+            "cmd": ["bash", "-c", "printf 'data' >> testdata/building/aaaaa"]
         },
         "c": {
-            "file": "^aaaax.ext$",
-            "exec": ["bash", "-c", "printf 'data' >> testdata/building/aaaax"]
+            "pattern": "^aaaax.ext$",
+            "cmd": ["bash", "-c", "printf 'data' >> testdata/building/aaaax"]
         }
       },
       "files": {

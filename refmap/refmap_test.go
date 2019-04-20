@@ -257,72 +257,98 @@ func TestSetUpdate(t *testing.T) {
 }
 
 func TestExec_Registring_Executing(t *testing.T) {
+	t.Run("send unknown operation, test return", func(t *testing.T) {
+		r := NewRefMap()
+		r.Start()
+		register := &ExecOp{
+			Op:  "unknown",
+			Rsp: make(chan ExecRsp),
+		}
+		r.Exec <- register
+
+		rsp := <-register.Rsp
+		if rsp.Key != "" {
+			t.Errorf(`expected empty key`)
+		}
+	})
+
 	t.Run("register and execute successful command, test timeout", func(t *testing.T) {
 		r := NewRefMap()
 		r.Start()
-		r.Register("a", []string{"sleep", `2`}, 1)
+		r.Register("a", []string{"sleep", `2`}, []string{}, 1)
 
 		rsp := r.Execute()
-		if rsp.Err.Error() != "signal: killed" {
-			t.Errorf(`expected "signal: killed", got "%+v"`, rsp.Err.Error())
+		if rsp[0].Err.Error() != "signal: killed" {
+			t.Errorf(`expected "signal: killed", got "%+v"`, rsp[0].Err.Error())
 		}
 	})
 
 	t.Run("register and execute successful command, test std outs", func(t *testing.T) {
 		r := NewRefMap()
 		r.Start()
-		r.Register("a", []string{"sh", "-c", `printf "hello here"; printf "error here" >&2`})
+		r.Register("a", []string{"sh", "-c", `printf "hello here"; printf "error here" >&2`}, []string{"b"})
 
 		rsp := r.Execute()
-		if rsp.Err != nil {
-			t.Errorf(`expected "<nil>", got "%+v"`, rsp.Err)
+		if rsp[0].Err != nil {
+			t.Errorf(`expected "<nil>", got "%+v"`, rsp[0].Err)
 		}
-		if rsp.More {
-			t.Errorf(`expected "false", got "%+v"`, rsp.More)
+		if rsp[0].Key != "a" {
+			t.Errorf(`expected "a", got "%+v"`, rsp[0].Key)
 		}
-		if rsp.Key != "a" {
-			t.Errorf(`expected "a", got "%+v"`, rsp.Key)
+		if rsp[0].StdOut != "hello here" {
+			t.Errorf(`expected "hello here", got "%+v"`, rsp[0].StdOut)
 		}
-		if rsp.StdOut != "hello here" {
-			t.Errorf(`expected "hello here", got "%+v"`, rsp.StdOut)
-		}
-		if rsp.StdErr != "error here" {
-			t.Errorf(`expected "error here", got "%+v"`, rsp.StdErr)
+		if rsp[0].StdErr != "error here" {
+			t.Errorf(`expected "error here", got "%+v"`, rsp[0].StdErr)
 		}
 	})
 
-	t.Run("register and execute successful commands, test More field", func(t *testing.T) {
+	t.Run("register and execute multiple dependant commands with one error, test order and error", func(t *testing.T) {
 		r := NewRefMap()
 		r.Start()
-		r.Register("a", []string{"printf", `print a`})
-		r.Register("b", []string{"printf", `print b`})
+		r.Register("a", []string{"printf", `print a`}, []string{"b"})
+		r.Register("b", []string{"printf", `print b`}, []string{})
+		r.Register("c", []string{"bash", "-c", `exit 2`}, []string{"a"})
 
 		rsp := r.Execute()
-		if rsp.Err != nil {
-			t.Errorf(`expected "<nil>", got "%+v"`, rsp.Err)
+		if rsp[0].Err != nil {
+			t.Errorf(`expected "<nil>", got "%+v"`, rsp[0].Err)
 		}
-		if !rsp.More {
-			t.Errorf(`expected "true", got "%+v"`, rsp.More)
+		if rsp[0].Key != "b" {
+			t.Errorf(`expected "b", got "%+v"`, rsp[0].Key)
 		}
-		if rsp.Key != "a" {
-			t.Errorf(`expected "a", got "%+v"`, rsp.Key)
-		}
-		if rsp.StdOut != "print a" {
-			t.Errorf(`expected "print a", got "%s"`, rsp.StdOut)
+		if rsp[0].StdOut != "print b" {
+			t.Errorf(`expected "print b", got "%s"`, rsp[0].StdOut)
 		}
 
-		rsp = r.Execute()
-		if rsp.Err != nil {
-			t.Errorf(`expected "<nil>", got "%+v"`, rsp.Err)
+		if rsp[1].Err != nil {
+			t.Errorf(`expected "<nil>", got "%+v"`, rsp[1].Err)
 		}
-		if rsp.More {
-			t.Errorf(`expected "false", got "%+v"`, rsp.More)
+		if rsp[1].Key != "a" {
+			t.Errorf(`expected "a", got "%+v"`, rsp[1].Key)
 		}
-		if rsp.Key != "b" {
-			t.Errorf(`expected "b", got "%+v"`, rsp.Key)
+		if rsp[1].StdOut != "print a" {
+			t.Errorf(`expected "print a", got "%s"`, rsp[1].StdOut)
 		}
-		if rsp.StdOut != "print b" {
-			t.Errorf(`expected "print b", got "%s"`, rsp.StdOut)
+
+		if rsp[2].Err.Error() != "exit status 2" {
+			t.Errorf(`expected "exit status 2", got "%+v"`, rsp[2].Err)
+		}
+		if rsp[2].Key != "c" {
+			t.Errorf(`expected "c", got "%+v"`, rsp[2].Key)
+		}
+		if rsp[2].StdOut != "" {
+			t.Errorf(`expected "", got "%s"`, rsp[2].StdOut)
+		}
+	})
+
+	t.Run("execute no commands, test empty list return", func(t *testing.T) {
+		r := NewRefMap()
+		r.Start()
+
+		rsp := r.Execute()
+		if len(rsp) != 0 {
+			t.Errorf(`expected no results, got "%+v"`, rsp)
 		}
 	})
 }

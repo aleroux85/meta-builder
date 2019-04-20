@@ -137,9 +137,9 @@ compile:
 
 	for walker := file.Parent; walker != nil; walker = walker.Up() {
 		for name, e := range walker.CmdMatch() {
-			r, _ := regexp.Compile(e.File)
+			r, _ := regexp.Compile(e.Pattern)
 			if r.MatchString(dstFilename) {
-				c.RegisterCmd(name, e.Exec)
+				c.RegisterCmd(name, e.Cmd, e.Deps)
 			}
 		}
 	}
