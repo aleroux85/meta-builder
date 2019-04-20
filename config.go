@@ -82,13 +82,13 @@ func (c *Config) Error(err ...error) error {
 	return c.err
 }
 
-func (c Config) RegisterCmd(name string, cmd, deps []string, timeOutOpt ...int) {
-	timeOut := 0
-	if len(timeOutOpt) > 0 {
-		timeOut = timeOutOpt[0]
+func (c Config) RegisterCmd(name string, cmd, deps []string, timeoutOpt ...uint) {
+	var timeout uint = 0
+	if len(timeoutOpt) > 0 {
+		timeout = timeoutOpt[0]
 	}
 
-	c.refMap.Register(name, cmd, deps, timeOut)
+	c.refMap.Register(name, cmd, deps, timeout)
 }
 
 func (c *Config) Load(p ProjectLoader, mf ...string) {

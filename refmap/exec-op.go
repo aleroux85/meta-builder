@@ -13,7 +13,7 @@ type ExecOp struct {
 	Op      string
 	Cmd     []string
 	Deps    []string
-	TimeOut int
+	Timeout uint
 	Rsp     chan ExecRsp
 }
 
@@ -26,11 +26,11 @@ type ExecRsp struct {
 type action struct {
 	Cmd     []string
 	Deps    []string
-	TimeOut int
+	Timeout uint
 }
 
 func (act action) exec(stdOut, stdErr *bytes.Buffer) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(act.TimeOut)*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(act.Timeout)*time.Millisecond)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, act.Cmd[0], act.Cmd[1:]...)
@@ -67,15 +67,15 @@ func (o ExecOp) handle(actions map[string]action) {
 	}
 
 	if _, found := actions[o.Key]; !found {
-		timeOut := 1000
-		if o.TimeOut > 0 {
-			timeOut = o.TimeOut
+		var timeout uint = 1000
+		if o.Timeout > 0 {
+			timeout = o.Timeout
 		}
 
 		actions[o.Key] = action{
 			Cmd:     o.Cmd,
 			Deps:    o.Deps,
-			TimeOut: timeOut,
+			Timeout: timeout,
 		}
 		fmt.Println("registered command", o.Key, o.Cmd)
 	}
@@ -120,10 +120,10 @@ func (o ExecOp) execute(actions map[string]action, key string) error {
 	return nil
 }
 
-func (r RefMap) Register(key string, cmd, deps []string, timeOutOpt ...int) {
-	timeOut := 0
-	if len(timeOutOpt) > 0 {
-		timeOut = timeOutOpt[0]
+func (r RefMap) Register(key string, cmd, deps []string, timeoutOpt ...uint) {
+	var timeout uint = 0
+	if len(timeoutOpt) > 0 {
+		timeout = timeoutOpt[0]
 	}
 
 	register := &ExecOp{
@@ -131,7 +131,7 @@ func (r RefMap) Register(key string, cmd, deps []string, timeOutOpt ...int) {
 		Op:      "register",
 		Cmd:     cmd,
 		Deps:    deps,
-		TimeOut: timeOut,
+		Timeout: timeout,
 		Rsp:     make(chan ExecRsp),
 	}
 	r.Exec <- register

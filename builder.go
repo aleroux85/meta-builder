@@ -49,6 +49,7 @@ type Action struct {
 	Pattern string   `json:"pattern"`
 	Cmd     []string `json:"cmd"`
 	Deps    []string `json:"depends-on"`
+	Timeout uint     `json:"timeout"`
 }
 
 type changeDetector struct {

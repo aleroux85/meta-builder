@@ -139,7 +139,7 @@ compile:
 		for name, e := range walker.CmdMatch() {
 			r, _ := regexp.Compile(e.Pattern)
 			if r.MatchString(dstFilename) {
-				c.RegisterCmd(name, e.Cmd, e.Deps)
+				c.RegisterCmd(name, e.Cmd, e.Deps, e.Timeout)
 			}
 		}
 	}

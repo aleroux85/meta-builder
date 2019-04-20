@@ -58,7 +58,7 @@ type Config interface {
 	Destination(...string) string
 	Source(...string) string
 	Force(...bool) bool
-	RegisterCmd(string, []string, []string, ...int)
+	RegisterCmd(string, []string, []string, ...uint)
 }
 
 type RefVal interface {
