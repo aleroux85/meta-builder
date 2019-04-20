@@ -31,9 +31,6 @@ func TestConfigCreateModify(t *testing.T) {
 	if !config.Force() {
 		t.Errorf(`expected true, got false`)
 	}
-	if config.Force() {
-		t.Errorf(`expected false, got true`)
-	}
 	if config.Force(false) {
 		t.Errorf(`expected false, got true`)
 	}

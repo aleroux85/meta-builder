@@ -37,6 +37,11 @@
         "aab": {
           "dest": "jump",
           "files": {"aaba.ext": {}}
+        },
+        "aac": {
+          "files": {
+            "aaca.ext": {}
+          }
         }
       }
     },

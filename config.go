@@ -60,14 +60,8 @@ func (c *Config) Destination(dst ...string) string {
 func (c *Config) Force(f ...bool) bool {
 	if len(f) > 0 {
 		c.force = f[0]
-		return c.force
 	}
-
-	if c.force {
-		c.force = false
-		return true
-	}
-	return false
+	return c.force
 }
 
 func (c *Config) Error(err ...error) error {
