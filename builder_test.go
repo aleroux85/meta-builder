@@ -122,11 +122,6 @@ func TestBuild(t *testing.T) {
 				path: "/aa/aac/aaca.ext",
 				exp:  "abc",
 			},
-			{
-				desc: "5B test before force",
-				path: "/aa/aac/aacb.ext",
-				exp:  "abc",
-			},
 		}
 		for _, tC := range testCases {
 			t.Run(tC.desc, func(t *testing.T) {
