@@ -163,7 +163,7 @@ func TestBuild(t *testing.T) {
 		}
 	})
 
-	t.Run("change a file and rebuild without forcing", func(t *testing.T) {
+	t.Run("change a file and rebuild with forcing", func(t *testing.T) {
 		c := builder.NewConfig(srcPath, testPath)
 		p := builder.NewProject()
 		c.Load(p, metaFilePath)
