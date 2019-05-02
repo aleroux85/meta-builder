@@ -64,7 +64,9 @@ func finish(refs map[string]*RefLink) {
 		}
 
 		ref.Change = DataStable
-		fmt.Printf("setting %s status %s\n", src, statusText[ref.Change])
+		if ref.Change != DataFlagged && ref.Change != DataStable {
+			fmt.Printf("setting %s status %s\n", src, statusText[ref.Change])
+		}
 
 		for dst, file := range ref.Files {
 			if file.Change() == DataRemove {

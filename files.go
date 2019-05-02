@@ -100,7 +100,6 @@ func (file *FSFile) Build(c refmap.Config) {
 
 	if parentDS.Template == nil || c.Watching() {
 		parentDS.Template = new(utils.Templax)
-		fmt.Println("parse")
 		err := parentDS.Template.Prepare(filepath.Join(c.Source(), sourcePath))
 		if err != nil {
 			c.Error(err)

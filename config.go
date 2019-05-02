@@ -222,8 +222,7 @@ func (c *Config) watch(throttling time.Duration) {
 				}
 
 				for _, ref := range c.refMap.ChangedRefs() {
-					for name, val := range ref.Files {
-						fmt.Println("rebuilding", name)
+					for _, val := range ref.Files {
 						val.Build(c)
 					}
 				}
