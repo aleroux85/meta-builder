@@ -12,7 +12,7 @@ type RefMap struct {
 	Reads   chan *ReadOp
 	Writes  chan *WriteOp
 	Sets    chan *SetOp
-	Sync    chan *SyncOp
+	sync    chan *SyncOp
 	Changed chan *ChangedOp
 	Exec    chan *ExecOp
 }
@@ -22,7 +22,7 @@ func NewRefMap() *RefMap {
 	m.Reads = make(chan *ReadOp)
 	m.Writes = make(chan *WriteOp)
 	m.Sets = make(chan *SetOp)
-	m.Sync = make(chan *SyncOp)
+	m.sync = make(chan *SyncOp)
 	m.Changed = make(chan *ChangedOp)
 	m.Exec = make(chan *ExecOp)
 	return m
@@ -42,7 +42,7 @@ func (m *RefMap) Start() {
 				write.handle(startLocation, refs)
 			case setter := <-m.Sets:
 				setter.handle(&startLocation, refs)
-			case sync := <-m.Sync:
+			case sync := <-m.sync:
 				sync.handle(refs)
 			case changed := <-m.Changed:
 				changed.handle(refs)
@@ -58,6 +58,7 @@ type Config interface {
 	Destination(...string) string
 	Source(...string) string
 	Force(...bool) bool
+	Watching() bool
 	RegisterCmd(string, []string, []string, ...uint)
 }
 

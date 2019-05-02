@@ -60,7 +60,7 @@ func (file *FSFile) Build(c refmap.Config) {
 	dstFileLocation := filepath.Join(c.Destination(), destination, dstFilename)
 
 	if _, err := os.Stat(dstFileLocation); err == nil {
-		if !c.Force() {
+		if !c.Force() && !c.Watching() {
 			return
 		}
 	} else if os.IsNotExist(err) {
@@ -98,8 +98,9 @@ func (file *FSFile) Build(c refmap.Config) {
 
 	fmt.Println("rebuilding", dstFileLocation)
 
-	if parentDS.Template == nil {
+	if parentDS.Template == nil || c.Watching() {
 		parentDS.Template = new(utils.Templax)
+		fmt.Println("parse")
 		err := parentDS.Template.Prepare(filepath.Join(c.Source(), sourcePath))
 		if err != nil {
 			c.Error(err)

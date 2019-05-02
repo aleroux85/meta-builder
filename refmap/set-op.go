@@ -36,7 +36,7 @@ func (o SetOp) handle(location *string, refs map[string]*RefLink) {
 	}
 	if ref, found := refs[o.Key]; found {
 		ref.Change = value
-		fmt.Println("setting", o.Key, o.Val)
+		fmt.Printf("setting %s status %s\n", o.Key, statusText[value])
 		o.Err <- nil
 	}
 }
@@ -63,19 +63,17 @@ func finish(refs map[string]*RefLink) {
 			continue
 		}
 
-		if ref.Change != DataFlagged && ref.Change != DataStable {
-			fmt.Println("setting", src, ref.Change, "-> stable")
-		}
 		ref.Change = DataStable
+		fmt.Printf("setting %s status %s\n", src, statusText[ref.Change])
 
 		for dst, file := range ref.Files {
 			if file.Change() == DataRemove {
-				fmt.Println("removing", src, ":", dst, "from refmap")
+				fmt.Printf("removing %s -> %s from refmap\n", src, dst)
 				delete(ref.Files, dst)
 				continue
 			}
 			if file.Change() != DataFlagged && file.Change() != DataStable {
-				fmt.Println("setting", src, ":", dst, file.Change(), "-> stable")
+				fmt.Printf("setting %s -> %s status %s\n", src, dst, statusText[file.Change()])
 			}
 			file.Change(DataStable)
 		}

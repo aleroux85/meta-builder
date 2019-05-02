@@ -3,8 +3,11 @@ package builder
 import (
 	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/aleroux85/meta-builder/refmap"
+	"github.com/aleroux85/utils"
+	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
 )
 
@@ -13,11 +16,12 @@ type Config struct {
 	source      string
 	destination string
 	force       bool
+	watching    bool
 	metaFile    string
 	refMap      *refmap.RefMap
-	// tmplMon     *utils.Monitor
-	// cnfgMon     *utils.Monitor
-	err error
+	tmplMon     *utils.Monitor
+	cnfgMon     *utils.Monitor
+	err         error
 }
 
 func NewConfig(l ...string) *Config {
@@ -35,11 +39,6 @@ func NewConfig(l ...string) *Config {
 	c.refMap.Start()
 	c.refMap.Set("location", c.source)
 
-	// c.tmplMon = new(utils.Monitor)
-	// c.tmplMon.Error = &c.err
-
-	// c.cnfgMon = new(utils.Monitor)
-	// c.cnfgMon.Error = &c.err
 	return c
 }
 
@@ -64,6 +63,39 @@ func (c *Config) Force(f ...bool) bool {
 	return c.force
 }
 
+func (c *Config) Watch(throttling time.Duration) {
+	if c.err != nil {
+		return
+	}
+
+	c.tmplMon = new(utils.Monitor)
+	c.tmplMon.Error = &c.err
+
+	c.cnfgMon = new(utils.Monitor)
+	c.cnfgMon.Error = &c.err
+
+	c.tmplMon.SetWatcher()
+	err := c.refMap.Sync(c.tmplMon)
+	if err != nil {
+		c.err = err
+	}
+
+	c.cnfgMon.SetWatcher()
+	c.cnfgMon.Watcher.Add(c.metaFile)
+
+	c.watching = true
+	go c.watch(throttling)
+}
+
+func (c Config) Watching() bool {
+	return c.watching
+}
+
+func (c Config) StopWatching() {
+	c.cnfgMon.Close()
+	c.tmplMon.Close()
+}
+
 func (c *Config) Error(err ...error) error {
 	if c.err != nil {
 		return c.err
@@ -74,6 +106,10 @@ func (c *Config) Error(err ...error) error {
 	}
 
 	return c.err
+}
+
+func (c *Config) Finish() {
+	c.refMap.Finish()
 }
 
 func (c Config) RegisterCmd(name string, cmd, deps []string, timeoutOpt ...uint) {
@@ -135,4 +171,83 @@ func (c *Config) BuildAll(force bool) {
 	if c.err != nil {
 		c.err = errors.Wrap(c.err, "building")
 	}
+}
+
+func (c *Config) watch(throttling time.Duration) {
+	var tmplChange, cnfgChange bool
+
+	for c.err == nil {
+		select {
+		case event, ok := <-c.cnfgMon.Watcher.Events:
+			if !ok {
+				goto stop
+			}
+			fmt.Println("fs event", event.Op, event.Name)
+			if event.Op&fsnotify.Write == fsnotify.Write ||
+				event.Op&fsnotify.Chmod == fsnotify.Chmod {
+				cnfgChange = true
+			}
+		case err := <-c.cnfgMon.Watcher.Errors:
+			c.err = err
+		case event, ok := <-c.tmplMon.Watcher.Events:
+			if !ok {
+				goto stop
+			}
+			fmt.Println("fs event", event.Op, event.Name)
+			if event.Op&fsnotify.Write == fsnotify.Write ||
+				event.Op&fsnotify.Chmod == fsnotify.Chmod {
+				c.refMap.Set(event.Name, "update")
+				tmplChange = true
+			}
+		case err := <-c.tmplMon.Watcher.Errors:
+			c.err = err
+		case <-time.After(throttling):
+			if tmplChange || cnfgChange {
+				if cnfgChange {
+					c.project.Load(c.metaFile)
+					if c.err != nil {
+						c.err = errors.Wrap(c.err, "loading configuration file")
+						return
+					}
+					c.project.Process(c.refMap)
+					if c.err != nil {
+						c.err = errors.Wrap(c.err, "processing configuration file")
+						return
+					}
+					c.refMap.Assess()
+					err := c.refMap.Sync(c.tmplMon)
+					if err != nil {
+						c.err = err
+					}
+				}
+
+				for _, ref := range c.refMap.ChangedRefs() {
+					for name, val := range ref.Files {
+						fmt.Println("rebuilding", name)
+						val.Build(c)
+					}
+				}
+				c.refMap.Finish()
+
+				for _, act := range c.refMap.Execute() {
+					fmt.Printf("%v\n%v", act.StdOut, act.StdErr)
+
+					if act.Err != nil {
+						c.err = act.Err
+					}
+				}
+
+				if c.err != nil {
+					c.err = errors.Wrap(c.err, "building")
+				}
+
+				cnfgChange = false
+				tmplChange = false
+			}
+		}
+	}
+
+stop:
+	c.cnfgMon.Stopped <- true
+	c.tmplMon.Stopped <- true
 }

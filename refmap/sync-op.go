@@ -28,3 +28,12 @@ func (o SyncOp) handle(refs map[string]*RefLink) {
 	}
 	o.Err <- nil
 }
+
+func (r RefMap) Sync(mon *utils.Monitor) error {
+	sync := &SyncOp{
+		Mon: mon,
+		Err: make(chan error),
+	}
+	r.sync <- sync
+	return <-sync.Err
+}

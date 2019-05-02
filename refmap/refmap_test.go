@@ -2,6 +2,8 @@ package refmap
 
 import (
 	"testing"
+
+	"github.com/aleroux85/utils"
 )
 
 func TestWriting(t *testing.T) {
@@ -351,6 +353,42 @@ func TestExec_Registring_Executing(t *testing.T) {
 			t.Errorf(`expected no results, got "%+v"`, rsp)
 		}
 	})
+}
+
+func TestSync(t *testing.T) {
+	r := NewRefMap()
+	r.Start()
+
+	val := new(StubRefVal)
+	val.hash = "test_hash"
+	r.Write("a", "b", val)
+	r.Assess()
+
+	var e error
+	w := &utils.Monitor{}
+	w.Error = &e
+
+	err := r.Sync(w)
+	if err == nil {
+		t.Errorf(`expected error "%v"`, err)
+	}
+
+	err = w.SetWatcher()
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = r.Sync(w)
+	if err != nil {
+		t.Errorf(`unexpected error "%v"`, err)
+	}
+	r.Finish()
+
+	r.Assess()
+	err = r.Sync(w)
+	if err != nil {
+		t.Errorf(`unexpected error "%v"`, err)
+	}
 }
 
 var status map[uint8]string = map[uint8]string{

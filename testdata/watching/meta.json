@@ -1,0 +1,16 @@
+{
+  "name": "Octagon",
+  "actions": {
+    "a": {
+        "pattern": "aaa.ext$",
+        "cmd": ["bash", "-c", "printf ' plus' >> testdata/watching/aa/aaa.ext"]
+    }
+  },
+  "directories": {
+    "aa": {
+      "files": {
+        "aaa.ext": {}
+      }
+    }
+  }
+}
