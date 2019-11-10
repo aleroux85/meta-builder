@@ -2,8 +2,6 @@ package refmap
 
 import (
 	"testing"
-
-	"github.com/aleroux85/utils"
 )
 
 func TestWriting(t *testing.T) {
@@ -365,7 +363,7 @@ func TestSync(t *testing.T) {
 	r.Assess()
 
 	var e error
-	w := &utils.Monitor{}
+	w := &Monitor{}
 	w.Error = &e
 
 	err := r.Sync(w)

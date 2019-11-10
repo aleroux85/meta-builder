@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/aleroux85/meta-builder/refmap"
-	"github.com/aleroux85/utils"
 )
 
 type FSDirectory struct {
@@ -14,7 +13,7 @@ type FSDirectory struct {
 	Files           map[string]*FSFile `json:"files"`
 	Copy            bool               `json:"copy"`
 	Update          string             `json:"update"`
-	Template        *utils.Templax     `json:"-"`
+	Template        *Templax           `json:"-"`
 	SourcePath      string             `json:"-"`
 	DestinationPath string             `json:"-"`
 	Entity

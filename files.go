@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/aleroux85/meta-builder/refmap"
-	"github.com/aleroux85/utils"
 	"github.com/pkg/errors"
 )
 
@@ -99,7 +98,7 @@ func (file *FSFile) Build(c refmap.Config) {
 	fmt.Println("rebuilding", dstFileLocation)
 
 	if parentDS.Template == nil || c.Watching() {
-		parentDS.Template = new(utils.Templax)
+		parentDS.Template = new(Templax)
 		err := parentDS.Template.Prepare(filepath.Join(c.Source(), sourcePath))
 		if err != nil {
 			c.Error(err)

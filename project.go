@@ -3,10 +3,11 @@ package builder
 import (
 	"encoding/json"
 	"io/ioutil"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/aleroux85/meta-builder/refmap"
-	"github.com/aleroux85/utils"
 	"github.com/pkg/errors"
 )
 
@@ -111,7 +112,7 @@ func (p *Project) LoadSecrets(fn string) {
 		}
 
 		for i := 0; i < 10; i++ {
-			secrets = append(secrets, utils.RandString(16))
+			secrets = append(secrets, RandString(16))
 		}
 
 		b, err := json.Marshal(secrets)
@@ -174,4 +175,32 @@ func (d PrjData) Project() *Project {
 
 type BranchSetter interface {
 	SetBranch(...DataBranch) DataBranch
+}
+
+const (
+	numalphaLetterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	letterIdxBits       = 6
+	letterIdxMask       = 1<<letterIdxBits - 1
+	letterIdxMax        = 63 / letterIdxBits
+)
+
+var rs = rand.NewSource(time.Now().UnixNano())
+
+// RandString generates a random string
+func RandString(n int) string {
+	// solution from http://stackoverflow.com/a/31832326
+	b := make([]byte, n)
+	for i, cache, remain := n-1, rs.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = rs.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(numalphaLetterBytes) {
+			b[i] = numalphaLetterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+
+	return string(b)
 }

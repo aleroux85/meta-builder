@@ -38,7 +38,9 @@ func main() {
 	}
 
 	c := builder.NewConfig(*srcPath, *dstPath)
-	c.Load(*metaFilePath)
+	err := c.Error()
+	p := builder.NewProject(&err)
+	c.Load(p, *metaFilePath)
 	c.BuildAll(*force)
 	if c.Error() != nil {
 		log.Fatalf("%+v\n", c.Error())

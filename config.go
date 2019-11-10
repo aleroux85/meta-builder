@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/aleroux85/meta-builder/refmap"
-	"github.com/aleroux85/utils"
 	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
 )
@@ -19,8 +18,8 @@ type Config struct {
 	watching    bool
 	metaFile    string
 	refMap      *refmap.RefMap
-	tmplMon     *utils.Monitor
-	cnfgMon     *utils.Monitor
+	tmplMon     *refmap.Monitor
+	cnfgMon     *refmap.Monitor
 	err         error
 }
 
@@ -68,10 +67,10 @@ func (c *Config) Watch(throttling time.Duration) {
 		return
 	}
 
-	c.tmplMon = new(utils.Monitor)
+	c.tmplMon = &refmap.Monitor{}
 	c.tmplMon.Error = &c.err
 
-	c.cnfgMon = new(utils.Monitor)
+	c.cnfgMon = &refmap.Monitor{}
 	c.cnfgMon.Error = &c.err
 
 	c.tmplMon.SetWatcher()

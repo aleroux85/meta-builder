@@ -2,12 +2,10 @@ package refmap
 
 import (
 	"fmt"
-
-	"github.com/aleroux85/utils"
 )
 
 type SyncOp struct {
-	Mon *utils.Monitor
+	Mon *Monitor
 	Err chan error
 }
 
@@ -29,7 +27,7 @@ func (o SyncOp) handle(refs map[string]*RefLink) {
 	o.Err <- nil
 }
 
-func (r RefMap) Sync(mon *utils.Monitor) error {
+func (r RefMap) Sync(mon *Monitor) error {
 	sync := &SyncOp{
 		Mon: mon,
 		Err: make(chan error),
